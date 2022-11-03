@@ -52,15 +52,22 @@ The Green Firmware has a custom security policy for its evaluation purpose; any 
 
 # Firmware API Javadoc
 
-Javadoc can be viewed in MicroEJ SDK Resource Center view by going to ``Help`` > ``MicroEJ Resource Center`` > ``Javadoc`` (after the import of the corresponding virtual device).
+Javadoc can be found in the ``GREEN-VD-RUNTIME-1.0.1-api`` folder located in the ``green`` directory.
 
 # Demos
 
 - Demo applications and getting started are available at the [MicroEJ Developer website](https://developer.microej.com/get-started/).
 
+
 # Changelog
 
-## [0.1.0] - Unreleased
+## [1.0.1] - 2022-11-03
+
+### Changed 
+
+- Update RELEASE_NOTES to remove outdated section.
+
+## [1.0.0] - 2022-11-03
 
 ### Added
 
@@ -69,3 +76,7 @@ Javadoc can be viewed in MicroEJ SDK Resource Center view by going to ``Help`` >
 - MicroUI3 support.
 - CommandServer-Socket system application.
 - NTP system application.
+
+_Markdown_   
+_Copyright 2022 MicroEJ Corp. All rights reserved._  
+_Use of this source code is governed by a BSD-style license that can be found with this software._
