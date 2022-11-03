@@ -1,0 +1,18 @@
+<!--
+	ANT
+
+	Copyright 2021 MicroEJ Corp. All rights reserved.
+	Use of this source code is governed by a BSD-style license that can be found with this software.
+-->
+<project>
+	<!--
+		Script called by MicroEJ Workbench when building the MMM module before loading module.ivy.
+	-->
+	<dirname file="${ant.file.override.module}" property="override.module.dir"/>
+	<property file="${override.module.dir}/module.properties"/>
+	<fail unless="target.platform.module.org" message="Missing property target.platform.module.org, required for the ivy platform dependency"/>
+	<fail unless="target.platform.module.name" message="Missing property target.platform.module.name, required for the ivy platform dependency"/>
+	<fail unless="target.platform.module.version" message="Missing property target.platform.module.version, required for the ivy platform dependency"/>
+	<property name="target.platform.module.branch" value="" description="Set the branch to empty by default, Required for the ivy platform dependency"/>
+	<property name="virtual.device.name" value="VDE-${ivy.module}"/>
+</project>

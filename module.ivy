@@ -1,0 +1,101 @@
+<!--
+	Ivy
+	
+	Copyright 2021-2022 MicroEJ Corp. All rights reserved.
+	Use of this source code is governed by a BSD-style license that can be found with this software.
+-->
+
+<ivy-module version="2.0" xmlns:ea="http://www.easyant.org" xmlns:m="http://ant.apache.org/ivy/extra" xmlns:ej="https://developer.microej.com" ej:version="2.0.0">
+	<info organisation="com.microej.firmware.developer" module="GREEN" status="integration" revision="1.0.0">
+		<ea:build organisation="com.is2t.easyant.buildtypes" module="build-firmware-multiapp" revision="7.0.+">
+			<ea:property name="application.main.class" value="com.microej.firmware.developer.green.Main" />
+			<ea:property name="test.run.includes.pattern" value="**/_AllTests_*.class"/>
+			<ea:property name="runtime.api.name" value="GREEN-VD-RUNTIME" />
+	    	<ea:property name="runtime.api.version" value="1.0.0" />
+			<!--
+				To use a local platform, uncomment the property below, set the path of the platform to use and comment the platform dependency (see the end of dependencies).
+		
+	    		<ea:property name="platform-loader.target.platform.dir" value="" /> 
+	    	-->
+		</ea:build>
+	</info>
+	
+	<configurations defaultconfmapping="default->default;provided->provided;default-fw->default;default-vd->default">
+		<conf name="default" visibility="public" description="Runtime dependencies to other artifacts"/>
+		<conf name="default-fw" visibility="public" description="Runtime dependencies to other artifacts on for the firmware"/>
+		<conf name="default-vd" visibility="public" description="Runtime dependencies to other artifacts on for the virtual device"/>
+		<conf name="provided" visibility="public" description="Compile-time dependencies to APIs provided by the platform"/>
+		<conf name="platform" visibility="private" description="Build-time dependency, specify the platform to use"/>
+		<conf name="documentation" visibility="public" description="Documentation related to the artifact (javadoc, PDF)"/>
+		<conf name="source" visibility="public" description="Source code"/>
+		<conf name="dist" visibility="public" description="Contains extra files like README.md, licenses"/>
+		<conf name="test" visibility="private" description="Dependencies for test execution. It is not required for normal use of the application, and is only available for the test compilation and execution phases."/>
+		<conf name="kernelapi" visibility="private" description="Configuration used to fetch the runtime environment."/>
+		<conf name="systemapp" visibility="private" description="System apps to package into the firmware and the virtual device."/>
+		<conf name="systemapp-fw" visibility="private" description="System apps to package into the firmware only."/>
+		<conf name="systemapp-vd" visibility="private" description="System apps to package into the virtual device only."/>
+	</configurations>
+	
+	<publications>
+		<!-- keep this empty if no specific artifact to publish -->
+		<!-- must be here in order to avoid all configurations for the default artifact -->
+	</publications>
+	
+	<dependencies>
+		
+		<!-- Foundation libraries --> 
+		<dependency org="ej.api" name="edc" rev="1.3.5" />
+		<dependency org="ej.api" name="bon" rev="1.4.1" />
+		<dependency org="ej.api" name="kf" rev="1.5.0" />
+		<dependency org="ej.api" name="net" rev="1.1.2" />
+		<dependency org="ej.api" name="ssl" rev="2.2.1" />
+		<dependency org="ej.api" name="microui" rev="3.1.1" />
+		<dependency org="ej.api" name="drawing" rev="1.0.4" />
+		<dependency org="ej.api" name="fs" rev="2.0.6" />
+		
+		<!-- Add on libraries -->
+			
+		<dependency org="ej.library.ui" name="mwt" rev="3.3.0" />
+		<dependency org="ej.library.eclasspath" name="logging" rev="1.1.0" />
+		
+		<dependency org="ej.library.wadapps" name="wadapps" rev="2.2.0" />
+		<dependency org="ej.library.wadapps" name="wadapps-multisandbox" rev="1.4.0" />
+		<dependency org="ej.library.wadapps" name="wadapps-multisandbox-fs" rev="1.1.0" />
+		<dependency org="ej.library.wadapps" name="wadapps-common" rev="1.1.1" />
+		<dependency org="com.microej.library.wadapps" name="connectivity" rev="2.0.0" />
+		
+        <!-- Mandatory Kernel API files -->
+		<dependency org="com.microej.kernelapi" name="edc" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="bon" rev="1.3.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="kf" rev="2.0.3" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="net" rev="1.2.2" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="ssl" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="basictool" rev="1.0.1" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="wadapps" rev="2.2.0" conf="kernelapi->default" transitive="false"/>
+        <dependency org="com.microej.kernelapi" name="storage" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
+        <dependency org="com.microej.kernelapi" name="service" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="microui" rev="3.0.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="mwt" rev="2.2.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="drawing" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="logging" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="connectivity" rev="1.3.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="property" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="trace" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
+	
+		<!-- Resident Applications -->
+		<dependency org="com.microej.app" name="command-server-socket" rev="1.0.0" conf="systemapp->application"/>	
+		<dependency org="com.microej.app" name="ntp" rev="2.0.0" conf="systemapp->application"/>	
+
+		<!-- MicroEJ Workbench (Studio & SDK) Extensions -->
+		<dependency org="com.is2t.tools" name="wadapps-localdeploy-socket-extension" rev="2.5.0" conf="default->default" />
+		<dependency org="com.is2t.tools" name="wadapps-localdeploy-wpk-socket-extension" rev="1.1.1" conf="default->default" />
+		<dependency org="com.is2t.tools" name="wadapps-localdeploy-resident-launcher" rev="1.1.3" conf="default->default"/>
+		<dependency org="com.is2t.tools" name="wadapps-console-socket-extension" rev="1.9.0" conf="default->default" />
+		<dependency org="com.is2t.tools" name="wadapps-firmware-customizer-extension" rev="1.2.0" conf="default->default" />
+		<dependency org="com.is2t.tools" name="application-repository-extension" rev="1.0.3" conf="default->default" />
+  
+		<!-- Platform dependency --> 
+		<dependency org="${target.platform.module.org}" name="${target.platform.module.name}" rev="${target.platform.module.version}" branch="${target.platform.module.branch}" conf="platform->default" transitive="false"/>
+		
+	</dependencies>
+</ivy-module>
