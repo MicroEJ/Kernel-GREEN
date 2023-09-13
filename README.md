@@ -1,162 +1,168 @@
-![](https://shields.microej.com/endpoint?url=https://repository.microej.com/packages/badges/sdk_5.4.json)
-![](https://shields.microej.com/endpoint?url=https://repository.microej.com/packages/badges/arch_7.16.json)
+![](https://shields.microej.com/endpoint?url=https://repository.microej.com/packages/badges/sdk_5.7.json)
+![](https://shields.microej.com/endpoint?url=https://repository.microej.com/packages/badges/arch_8.0.json)
 ![](https://shields.microej.com/endpoint?url=https://repository.microej.com/packages/badges/gui_3.json)
 
-# Green Firmware
+Kernel GREEN 
+============
+
+Welcome to the Kernel "GREEN", a MicroEJ Kernel Application project. 
+
+Its main goal is to provide a turnkey Kernel code example that offers basic services for developing a [Sandboxed Application](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedApplication.html) and deploying it easily on your Device. 
+Additionally, this project serves as a starting point for Kernel developers to learn and demonstrate most of the Multi-Sandboxing capabilities of the MicroEJ technology. 
+
+Feel free to fork and adapt the Kernel to fit your specific needs.
+
+**IMPORTANT**: Kernel development requires a fundamental comprehension of building VEE Ports and Standalone Applications using MICROEJ SDK.
+If you are not already familiar with MicroEJ Technology, you should start with the [MicroEJ Getting Started](https://docs.microej.com/en/latest/overview/gettingStarted.html) tutorials beforehand. 
+With that done, you can confidently embark on your exciting journey into Kernel development with MicroEJ.
+
+# Specification
+
+This Kernel implements the following specification:
+
+- Sandboxed Applications Lifecycle
+  
+  - Enables the deployment of Sandboxed Applications from the MICROEJ SDK to your device through a TCP/IP connection.
+    Features `.fo` files are also persisted.
+  
+  - Automatically starts all previously deployed Sandboxed Applications during boot. 
+  
+  - Registers an instance of [ej.kf.FeatureStateListener](https://repository.microej.com/javadoc/microej_5.x/apis/ej/kf/FeatureStateListener.html) to log when the state of an Application changes.
+
+- Runtime
+  
+  - Registers [ej.bon.Timer](https://repository.microej.com/javadoc/microej_5.x/apis/ej/bon/Timer.html) as a service. 
+    Sandboxed Applications can schedule time-based tasks without extra-thread creation.
+
+  - Enables communication between Sandboxed Applications using [Shared Interfaces](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedAppSharedInterface.html).
+  
+    - Registers default [Kernel converters](https://docs.microej.com/en/latest/KernelDeveloperGuide/featuresCommunication.html?kernel-types-converter).
+
+    - Provides a Shared Registry for Sandboxed Applications to register and retrieve services declared as Shared Interfaces.
+
+- Networking
+
+  - Starts the [ServerSocket](https://repository.microej.com/javadoc/microej_5.x/apis/java/net/ServerSocket.html) and listens for Sandboxed Applications deployment commands.
+
+  - Registers an instance of [android.net.ConnectivityManager.NetworkCallback](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.NetworkCallback.html) to log all available network interfaces on network state update.
+
+  - Synchronizes the time of the device using NTP.
+
+- Persistency
+
+  - Registers a [ej.storage.Storage](https://repository.microej.com/javadoc/microej_5.x/apis/ej/storage/Storage.html) service to provide a simple persistency mechanism for Sandboxed Applications.
+    The implementation is based on FS (File System) API. The Kernel and each Sandboxed Application have their own data space.
+
+- Graphical User Interface
+ 
+  - Starts the MicroUI Graphical Engine.
+  
+  - Initializes the display with a [black screen](./src/main/java/com/microej/firmware/developer/green/BlackScreenDisplayable.java). When a Sandboxed Application is uninstalled, the Kernel checks if itself or any other started application do own a [Displayable](https://repository.microej.com/javadoc/microej_5.x/apis/index.html?ej/microui/display/Displayable.html) object, if none is found, it will render a new black screen.
 
 
-# Overview
+# Setup the Kernel Project
 
-Green firmware is a [Multi-sandboxed evaluation firmware](https://docs.microej.com/en/latest/KernelDeveloperGuide/overview.html#multi-sandbox-build-flow).
+## Prerequisites
 
-> NOTE:  
-> The current project shows errors trying to compile in IDE as by default it loads the platform remotely using properties not yet supported by IVYDE.
-> However the build module will work as easyant override this property during its build.
-> You can also load the plaform locally to remove errors.
+### Environment
 
-### Kernel APIs
+- MICROEJ SDK `5.7.0` or higher (tested with [MICROEJ SDK Distribution](https://docs.microej.com/en/latest/SDKUserGuide/installSDKDistributionLatest.html) `23.07`).
+- A [MicroEJ Evaluation License](https://docs.microej.com/en/latest/SDKUserGuide/licenses.html).
 
-In order for the kernel to specify which methods and static fields features can use, the kernel needs to add Kernel APIs as dependencies in its module.ivy.
-The Kernel API module also allow to specify types to use as they can be different between kernel and features.
-You can find further informations about Kernel APIS in the [kernel developer guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/kernelAPI.html).
+### VEE Port
 
-Here's the list of Kernel APIs available in the Green Firmware: 
+The Kernel can be built using any VEE Port that provides the following Foundation Libraries. 
 
-- EDC
-- BON
-- KF
-- NET
-- SSL
-- BasicTool
-- Wadapps
-- Storage
-- Service
-- MicroUI
-- MWT
-- Drawing
-- Logging
-- Connectivity
-- Property
-- Trace
+| Foundation Library | Version |
+| ------------------ | ------- |
+| EDC                | 1.3     |
+| BON                | 1.4     |
+| KF                 | 1.6     |
+| NET                | 1.1     |
+| SSL                | 2.2     |
+| MicroUI            | 3.1     |
+| Drawing            | 1.0     |
+| FS                 | 2.1     |
 
-### System apps
+**WARNING**: The VEE Port must be built with [Multi-Sandbox](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html) capability.  
+Check out the [VEE Porting Guide](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html#installation) for more information about enabling Multi-Sandbox capacities.
 
-The Green firmware embeds the following system apps:
+The Kernel has been tested using the [VEE Port for STMicroelectronics STM32F7508-DK Discovery kit](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK/tree/2.0.0) v2.0.0.
 
-- CommandServer-Socket
-- Network Time Protocol (NTP)
+## Import the Kernel Project in the SDK
 
-### Dynamic management of features
+Import the projects in the SDK's workspace:
 
-Features are dynamically managed on the board at runtime.
+- Select `File > Import > General > Existing Projects into Workspace`.
+- Select root directory to where you cloned the sources.
+- Click on the `Finish` button. 
 
-#### Kernel start
-At kernel start up, each application stored in a specific folder as fo file is installed and started one at a time.
+The Kernel Application project `com.microej.kernel.green` is imported in your workspace.
 
+## Configure the VEE Port
 
-#### Management during runtime
-Applications are sent to the board as a .fo file and written in its filesystem then the kernel loads and installs this application from this file.
+The VEE Port can be configured in one of the following ways:
 
-The default behaviour of a Kernel is to directly install the application in RAM memory but the firmware Green does explicitely specify that any received application should be persistent and therefore stored in file system.
-Once the kernel has copied the .fo file to its file system, it installs and starts the application.
+- By declaring a Module Dependency (default).
+- By declaring a local directory.
 
+### Declare the VEE Port from a Module Dependency
+Set the VEE Port dependency organization, name and version in the [module.properties](./module.properties) file to select the target VEE Port.  
+By default the VEE Port for _STMicroelectronics STM32F7508-DK Discovery Kit_ with the STM32CubeIDE / GCC C toolchain is selected as the target VEE Port.
 
-### Security Policy
+For the VEE Port dependency to be resolved in the workspace, add the aforementioned properties file to the _Ant_ runtime by following the below steps.
+- Select on `Window` > `Preferences`.
+- In the `Ant` section, select `Runtime`.
+- In the `Properties` tab, click on `Add Files...`
+- Select the `module.properties` file located at the root of the Kernel project.
+- Click `Ok`.
+- Restart the SDK.
 
-As the Green firmware is an evaluation firmware, its security policy is different from usual use case. The Green firmware will only disallow the stop or uninstall of any resident application and leave any other action allowed.
+Please note that the MicroEJ SDK is by default configured to fetch VEE Ports from the [Developer Repository](https://docs.microej.com/en/latest/SDKUserGuide/repository.html#developer-repository) by default.
 
-# Usage
+### Declare the VEE Port from a Local Directory
 
-## Platform load
+If you want to build the Kernel on a VEE Port built locally, follow instructions described in the [`module.ivy`](./module.ivy) file to configure the target VEE Port directory.
 
-By default the firmware will download the platform from the MicroEJ Central Repository during the build.
-You can however use a local platform by following these steps: 
-> Make sure to use a [Multi-Sandbox](https://docs.microej.com/en/latest/PlatformDeveloperGuide/multiSandbox.html) platform otherwise an error will occure during the build saying that some files are missing.
-1. In the module.ivy file, uncomment the ``<ea:property name="platform-loader.target.platform.dir" value="" />`` property and set the value to the path of the platform ``/source`` folder
-2. In the module.ivy file, comment the default platform dependency (initally located at the end of dependencies)
+### Setup Specific Options
 
-## Build the firmware binaries
+Before going further, your VEE Port must be setup with toolchain specific environment variables and BSP Connection options.
+Refer to the VEE Port specific documentation for more details.
 
-In the ``module.ivy`` file you can either choose to load the platform remotely or to load it locally.
-Once you have configured your platform import:
-1. Right Click on the project
-2. Select ``Build Module``
-3. Wait until the end of the build (it may take few minutes)
+# Build the Kernel
 
-Once the build is completed, you can find the .out and .vde files in ``/target~/artifacts/``
+Once the VEE Port is configured, you are ready to build the Kernel. 
+Right-click on the Kernel project and select `Build Module`.
+The build is started and may take few minutes.  
 
-## Import the virtual device
+At the end of the build, the `target~/artifacts/` directory should contain the build output:
+- `GREEN.out`: the Executable file to be programmed on the Device.
+- `GREEN.vde`: the Virtual Device for running Sandboxed Applications on this Kernel.
 
-1. Click ``File``
-2. Select ``Import``
-3. In the Import window, open ``MicroEJ`` wizard
-4. Select ``Virtual Devices``
-5. Click ``Next >``
-6. Check ``Select directory``
-7. Browse to ``com.microej.firmware.developer.green\target~\artifacts``
-8. Click ``Select Folder``
-9. You should see the ``VDE-green`` appear in the ``Target:`` list make sure it is selected
-10. Accept the MicroEJ Studio license agreement
-11. Click ``Finish``
+# Develop Sandboxed Applications
 
-The virtual device has been imported to your workspace.
+You are now ready to test your Kernel and deploy your first Sandboxed Application.
+To do so follow the [Get Started with Multi-Sandbox for STM32F7508-DK Discovery Kit](https://developer.microej.com/stm32f7508-dk-discovery-kit-get-started-multi-sandbox/) guide using your own generated Executable and Virtual Device files.
 
-## Run an application on simulator
+You will learn how to:
+- create a first Sandboxed Application,
+- run a Sandboxed Application on the Virtual Device,
+- run the same Sandboxed Application on your real device. . 
 
->Note: a sandboxed application does have a different entry point than standalone applications (i.e BackgroundService or FeatureEntryPoint class).
->Please refer to https://docs.microej.com/en/latest/SDKUserGuide/sdkMigrationNotes.html?highlight=wadapps#wadapps-application-update to migrate a standalone application to a sandboxed application.
+Instructions may apply to any VEE Port, except for those related to the deployment of the Multi-Sandbox Firmware which are specific the STM32F7508-DK Discovery kit.
+When working with a different target device, you will need to adjust these instructions accordingly.
 
-1. Right Click on the project you want to run
-2. Select ``Run as -> MicroEJ Application``
-3. Select your application entry point, click ``Ok``
-4. Select the virtual device (.vde) you built, click ``Ok``
+# Going further
 
-The application will start building on the simulator.
+By now, you should have completed the initial functional Kernel. 
+Before proceeding with any customization, please consult the [Kernel Developer Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/index.html).
 
-## Run an application on board
+If you wish to understand the core Multi-Sandboxing mechanisms, you can refer to the following resources:
 
-The GREEN firmware is a multi-sandbox firmware, the CommandServer-Socket allows the user to deploy application using sockets on a local network.
-The board will need an internet connection, then the ``CONNECTIVITY`` api from the MicroEJ-Developer Runtime Environment will automatically assign an ip address to the board using DHCP.
+- The [Kernel & Features specification](https://docs.microej.com/en/latest/KernelDeveloperGuide/kf.html) which provides a detailed explanation of core concepts.
+- The [ej.kf.Kernel class](https://repository.microej.com/javadoc/microej_5.x/apis/ej/kf/Kernel.html) which offers the complete Javadoc API.
 
-
-1. Right Click on the project you want to run (You can directly go to step 5 if you have already launched the application once on simulator)
-2. Select ``Run as -> MicroEJ Application``
-3. Select your application entry point, click ``Ok``
-4. Select the platform (.vde) you built, click ``Ok``
-
-The application will start building on the simulator and create a run configuration.
-
-5. Click ``Run -> Run Configurations...``
-6. Select the run configuration of your project
-7. Go the the ``Execution`` tab
-8. In the ``Execution`` section check ``Execute on device`` then in the ``Settings`` list, select ``Local Deployment (Socket)``
-9. Go to the ``Configuration`` tab
-10. Click ``Local Deployment (Socket)``
-11. In the ``Host`` field, insert the board's ip (the ip can be found in the standard output of the board)
-12. Click ``Apply`` then ``Run``
-
-The application will build and then be automatically deployed on the board using sockets.
-
-# Requirements
-
-N/A.
-
-# Dependencies
-
-_All dependencies are retrieved transitively by MicroEJ Module Manager_.
-
-# Source
-
-N/A.
-
-# Restrictions
-
-None.
-
-# Troubleshooting
-
-Network latencies or stability inconsistencies can cause issues during the deployment, if you encounter an error during the deployment, try building the application again.
 
 ---
-_Copyright 2021-2022 MicroEJ Corp. All rights reserved._  
+_Copyright 2021-2023 MicroEJ Corp. All rights reserved._  
 _Use of this source code is governed by a BSD-style license that can be found with this software._

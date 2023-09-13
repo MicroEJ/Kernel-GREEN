@@ -1,3 +1,5 @@
 target~
 src-adpgenerated
 /bin/
+com.microej.kernel.green.Main
+.scannerwork

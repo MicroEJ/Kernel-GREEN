@@ -2,22 +2,12 @@
 <!--
 	Kernel API
 	
-	Copyright 2021 MicroEJ Corp. All rights reserved.
+	Copyright 2021-2023 MicroEJ Corp. All rights reserved.
 	Use of this source code is governed by a BSD-style license that can be found with this software.
 -->
 <require>
-	<!--
-		Needed by microui backward
-	-->
-	<type name="com.is2t.tools.ArrayTools" />
-	<method name="com.is2t.tools.ArrayTools.copy(java.lang.Object[])java.lang.Object[]" />
-	<method name="com.is2t.tools.ArrayTools.remove(java.lang.Object[],java.lang.Object)java.lang.Object[]" />
-	<method name="com.is2t.tools.ArrayTools.add(java.lang.Object[],java.lang.Object)java.lang.Object[]" />
-	<method name="com.is2t.tools.ArrayTools.add(java.lang.Object[],java.lang.Object[])java.lang.Object[]" />
 	
-	<type name="ej.util.Device"/>
-	<method name="ej.util.Device.getArchitecture()java.lang.String"/>
-	<method name="ej.util.Device.getId()byte[]"/>
+	<!-- Set of fields and methods from ej.bon.XMath class to ensure compatibility despite being deprecated to java.lang.Math from EDC -->
 
 	<type name="ej.bon.XMath"/>
 	<field name="ej.bon.XMath.E"/>
@@ -33,10 +23,6 @@
 	<method name="ej.bon.XMath.cos(double)double"/>
 	<method name="ej.bon.XMath.exp(double)double"/>
 	<method name="ej.bon.XMath.floor(double)double"/>
-	<method name="ej.bon.XMath.limit(double,double,double)double"/>
-	<method name="ej.bon.XMath.limit(float,float,float)float"/>
-	<method name="ej.bon.XMath.limit(int,int,int)int"/>
-	<method name="ej.bon.XMath.limit(long,long,long)long"/>
 	<method name="ej.bon.XMath.log(double)double"/>
 	<method name="ej.bon.XMath.max(double,double)double"/>
 	<method name="ej.bon.XMath.max(float,float)float"/>
@@ -53,59 +39,4 @@
 	<method name="ej.bon.XMath.toDegrees(double)double"/>
 	<method name="ej.bon.XMath.toRadians(double)double"/>
 	
-		<type name="ej.basictool.ArrayTools"/>
-	<method name="ej.basictool.ArrayTools.add(int[],int)int[]"/>
-	<method name="ej.basictool.ArrayTools.add(int[],int,int)int[]"/>
-	<method name="ej.basictool.ArrayTools.add(java.lang.Object[],java.lang.Object)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.add(java.lang.Object[],java.lang.Object,int)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.add(java.lang.Object[],java.lang.Object[])java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.checkArrayBounds(int,int,int)void"/>
-	<method name="ej.basictool.ArrayTools.checkBounds(byte[],int,int)void"/>
-	<method name="ej.basictool.ArrayTools.checkBounds(int,int,int)void"/>
-	<method name="ej.basictool.ArrayTools.checkStringBounds(int,int,int)void"/>
-	<method name="ej.basictool.ArrayTools.contains(int[],int)boolean"/>
-	<method name="ej.basictool.ArrayTools.contains(int[],int,int)boolean"/>
-	<method name="ej.basictool.ArrayTools.contains(java.lang.Object[],java.lang.Object)boolean"/>
-	<method name="ej.basictool.ArrayTools.contains(java.lang.Object[],java.lang.Object,int)boolean"/>
-	<method name="ej.basictool.ArrayTools.containsEquals(java.lang.Object[],java.lang.Object)boolean"/>
-	<method name="ej.basictool.ArrayTools.containsEquals(java.lang.Object[],java.lang.Object,int)boolean"/>
-	<method name="ej.basictool.ArrayTools.copy(int[])int[]"/>
-	<method name="ej.basictool.ArrayTools.copy(int[],int)int[]"/>
-	<method name="ej.basictool.ArrayTools.copy(java.lang.Object[])java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.copy(java.lang.Object[],int)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.copy(java.lang.Object[],int,java.lang.Class)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.copy(java.lang.Object[],java.lang.Class)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.createNewArray(java.lang.Class,int)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.createNewArray(java.lang.Object[],int)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.getIndex(int[],int)int"/>
-	<method name="ej.basictool.ArrayTools.getIndex(java.lang.Object[],java.lang.Object)int"/>
-	<method name="ej.basictool.ArrayTools.getIndex(java.lang.Object[],java.lang.Object,int)int"/>
-	<method name="ej.basictool.ArrayTools.getIndexEquals(java.lang.Object[],java.lang.Object)int"/>
-	<method name="ej.basictool.ArrayTools.getIndexEquals(java.lang.Object[],java.lang.Object,int)int"/>
-	<method name="ej.basictool.ArrayTools.grow(int[],int,int)int[]"/>
-	<method name="ej.basictool.ArrayTools.grow(java.lang.Object[],int,int)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.insert(java.lang.Object[],int,java.lang.Object)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.insert(java.lang.Object[],int,java.lang.Object,int)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.remove(int[],int)int[]"/>
-	<method name="ej.basictool.ArrayTools.remove(int[],int,int)boolean"/>
-	<method name="ej.basictool.ArrayTools.remove(java.lang.Object[],int)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.remove(java.lang.Object[],java.lang.Object)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.remove(java.lang.Object[],java.lang.Object,int)boolean"/>
-	<method name="ej.basictool.ArrayTools.removeEquals(java.lang.Object[],java.lang.Object)java.lang.Object[]"/>
-	<method name="ej.basictool.ArrayTools.removeEquals(java.lang.Object[],java.lang.Object,int)boolean"/>
-	<method name="ej.basictool.ArrayTools.removeRange(int[],int,int)int[]"/>
-	<method name="ej.basictool.ArrayTools.shrink(int[],int,int)int[]"/>
-	<method name="ej.basictool.ArrayTools.shrink(java.lang.Object[],int,int)java.lang.Object[]"/>
-	
-	<!-- Workaround for 7.16.1 architectures see here https://youtrack.cross/issue/M0081MEJA-1540 -->
-	<type name="int[]"/>
-	<type name="long[]"/>
-	<type name="short[]"/>
-	<type name="double[]"/>
-	<type name="float[]"/>
-	<type name="byte[]"/>
-	<type name="char[]"/>
-	<type name="boolean[]"/>
-
-
 </require>

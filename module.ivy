@@ -1,22 +1,26 @@
 <!--
 	Ivy
 	
-	Copyright 2021-2022 MicroEJ Corp. All rights reserved.
+	Copyright 2021-2023 MicroEJ Corp. All rights reserved.
 	Use of this source code is governed by a BSD-style license that can be found with this software.
 -->
 
 <ivy-module version="2.0" xmlns:ea="http://www.easyant.org" xmlns:m="http://ant.apache.org/ivy/extra" xmlns:ej="https://developer.microej.com" ej:version="2.0.0">
-	<info organisation="com.microej.firmware.developer" module="GREEN" status="integration" revision="1.0.1">
-		<ea:build organisation="com.is2t.easyant.buildtypes" module="build-firmware-multiapp" revision="7.0.+">
-			<ea:property name="application.main.class" value="com.microej.firmware.developer.green.Main" />
+	<info organisation="com.microej.kernel" module="GREEN" status="integration" revision="1.1.0">
+		<ea:build organisation="com.is2t.easyant.buildtypes" module="build-firmware-multiapp" revision="8.1.+">
+			<ea:property name="application.main.class" value="com.microej.kernel.green.Main" />
 			<ea:property name="test.run.includes.pattern" value="**/_AllTests_*.class"/>
 			<ea:property name="runtime.api.name" value="GREEN-VD-RUNTIME" />
-	    	<ea:property name="runtime.api.version" value="1.0.1" />
+	    	<ea:property name="runtime.api.version" value="1.1.0" />
 			<!--
-				To use a local platform, uncomment the property below, set the path of the platform to use and comment the platform dependency (see the end of dependencies).
+				To configure a local VEE Port:
+				- uncomment the property below.
+				- set the path of the VEE Port to use.
+				- comment the VEE Port dependency at the end of <dependencies>.
 		
 	    		<ea:property name="platform-loader.target.platform.dir" value="" /> 
 	    	-->
+	    	<ea:property name="skip.readme.checker" value="true" />
 		</ea:build>
 	</info>
 	
@@ -46,23 +50,31 @@
 		<!-- Foundation libraries --> 
 		<dependency org="ej.api" name="edc" rev="1.3.5" />
 		<dependency org="ej.api" name="bon" rev="1.4.1" />
-		<dependency org="ej.api" name="kf" rev="1.5.0" />
+		<dependency org="ej.api" name="kf" rev="1.6.1" />
 		<dependency org="ej.api" name="net" rev="1.1.2" />
 		<dependency org="ej.api" name="ssl" rev="2.2.1" />
 		<dependency org="ej.api" name="microui" rev="3.1.1" />
 		<dependency org="ej.api" name="drawing" rev="1.0.4" />
-		<dependency org="ej.api" name="fs" rev="2.0.6" />
+		<dependency org="ej.api" name="fs" rev="2.1.1" />
 		
 		<!-- Add on libraries -->
 			
 		<dependency org="ej.library.ui" name="mwt" rev="3.3.0" />
-		<dependency org="ej.library.eclasspath" name="logging" rev="1.1.0" />
+		<dependency org="ej.library.eclasspath" name="logging" rev="1.2.1" />
 		
-		<dependency org="ej.library.wadapps" name="wadapps" rev="2.2.0" />
+		<dependency org="ej.library.runtime" name="basictool" rev="1.6.0" />
+	
 		<dependency org="ej.library.wadapps" name="wadapps-multisandbox" rev="1.4.0" />
-		<dependency org="ej.library.wadapps" name="wadapps-multisandbox-fs" rev="1.1.0" />
-		<dependency org="ej.library.wadapps" name="wadapps-common" rev="1.1.1" />
+		
 		<dependency org="com.microej.library.wadapps" name="connectivity" rev="2.0.0" />
+		
+		<dependency org="com.microej.library.util" name="kf-util" rev="2.6.0" />
+		
+		<dependency org="ej.library.runtime" name="service" rev="1.1.1" />
+		<dependency org="ej.library.runtime" name="property" rev="4.1.0" />
+		
+	
+		<dependency org="ej.library.runtime" name="storage-fs" rev="1.2.0" /> 
 		
         <!-- Mandatory Kernel API files -->
 		<dependency org="com.microej.kernelapi" name="edc" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
@@ -70,31 +82,41 @@
 		<dependency org="com.microej.kernelapi" name="kf" rev="2.0.3" conf="kernelapi->default" transitive="false"/>
 		<dependency org="com.microej.kernelapi" name="net" rev="1.2.2" conf="kernelapi->default" transitive="false"/>
 		<dependency org="com.microej.kernelapi" name="ssl" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
-		<dependency org="com.microej.kernelapi" name="basictool" rev="1.0.1" conf="kernelapi->default" transitive="false"/>
-		<dependency org="com.microej.kernelapi" name="wadapps" rev="2.2.0" conf="kernelapi->default" transitive="false"/>
-        <dependency org="com.microej.kernelapi" name="storage" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
-        <dependency org="com.microej.kernelapi" name="service" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="basictool" rev="1.3.0" conf="kernelapi->default" transitive="false"/>
+        <dependency org="com.microej.kernelapi" name="storage" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
 		<dependency org="com.microej.kernelapi" name="microui" rev="3.0.0" conf="kernelapi->default" transitive="false"/>
 		<dependency org="com.microej.kernelapi" name="mwt" rev="2.2.0" conf="kernelapi->default" transitive="false"/>
-		<dependency org="com.microej.kernelapi" name="drawing" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="drawing" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
 		<dependency org="com.microej.kernelapi" name="logging" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
 		<dependency org="com.microej.kernelapi" name="connectivity" rev="1.3.0" conf="kernelapi->default" transitive="false"/>
-		<dependency org="com.microej.kernelapi" name="property" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
 		<dependency org="com.microej.kernelapi" name="trace" rev="1.0.0" conf="kernelapi->default" transitive="false"/>
-	
-		<!-- Resident Applications -->
-		<dependency org="com.microej.app" name="command-server-socket" rev="1.0.0" conf="systemapp->application"/>	
-		<dependency org="com.microej.app" name="ntp" rev="2.0.0" conf="systemapp->application"/>	
+		<dependency org="com.microej.kernelapi" name="service" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="property" rev="1.1.0" conf="kernelapi->default" transitive="false"/>
+		<dependency org="com.microej.kernelapi" name="wadapps" rev="2.2.0" conf="kernelapi->default" transitive="false"/>
+		
+		<!-- Ntp dependency --> 
+		
+		<dependency org="ej.library.iot" name="net-util" rev="1.2.0" />
+		
+		<!-- Command Server socket dependencies -->
+		
+		<dependency org="com.microej.library.kernel" name="localdeploy-impl" rev="1.0.0" /> 
+		<dependency org="ej.library.iot" name="rcommand" rev="2.10.1" /> 
+		<dependency org="ej.library.iot" name="rcommand-serversocket" rev="2.5.0" />
+		
 
-		<!-- MicroEJ Workbench (Studio & SDK) Extensions -->
-		<dependency org="com.is2t.tools" name="wadapps-localdeploy-socket-extension" rev="2.5.0" conf="default->default" />
+		<!-- MicroEJ SDK Extensions -->
+		
+		<dependency org="com.microej.tool.kernel" name="localdeploy-extension" rev="1.0.0" conf="default->default" />
+		
+		<!--
 		<dependency org="com.is2t.tools" name="wadapps-localdeploy-wpk-socket-extension" rev="1.1.1" conf="default->default" />
-		<dependency org="com.is2t.tools" name="wadapps-localdeploy-resident-launcher" rev="1.1.3" conf="default->default"/>
 		<dependency org="com.is2t.tools" name="wadapps-console-socket-extension" rev="1.9.0" conf="default->default" />
-		<dependency org="com.is2t.tools" name="wadapps-firmware-customizer-extension" rev="1.2.0" conf="default->default" />
+		-->
 		<dependency org="com.is2t.tools" name="application-repository-extension" rev="1.0.3" conf="default->default" />
-  
-		<!-- Platform dependency --> 
+  		
+		<!-- VEE Port dependency --> 
+		
 		<dependency org="${target.platform.module.org}" name="${target.platform.module.name}" rev="${target.platform.module.version}" branch="${target.platform.module.branch}" conf="platform->default" transitive="false"/>
 		
 	</dependencies>
