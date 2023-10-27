@@ -27,10 +27,11 @@ import ej.service.ServiceFactory;
 public class NTPService implements SimpleNetworkCallback {
 
 	private static final long NTP_UPDATE_PERIOD = 2 * 60 * 60 * 1000L;
+	private static final int NTP_UPDATE_TIMEOUT = 10000;
 	private static final long NTP_DEFAULT_DELAY = 20 * 1000L;
 	private static final int RETRY_PERIOD = 1000;
 	private static final int MAX_RETRY = 10;
-	private static final long THRESHOLD = 1563791681000l;
+	private static final long THRESHOLD = 1_563_791_681_000l;
 
 	private final String url;
 	private final int port;
@@ -81,7 +82,7 @@ public class NTPService implements SimpleNetworkCallback {
 	public boolean update() {
 		boolean updated = false;
 		try {
-			NtpUtil.updateLocalTime(this.url, this.port, 10000);
+			NtpUtil.updateLocalTime(this.url, this.port, NTP_UPDATE_TIMEOUT);
 			updated = Util.currentTimeMillis() > THRESHOLD;
 			if (updated) {
 				Main.LOGGER.info("Updated time: " + new Date(System.currentTimeMillis()));

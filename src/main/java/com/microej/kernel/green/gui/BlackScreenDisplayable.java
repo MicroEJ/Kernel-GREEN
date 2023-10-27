@@ -12,7 +12,7 @@ import ej.microui.display.GraphicsContext;
 import ej.microui.display.Painter;
 
 /**
- *
+ * Class that represents a black screen to be displayed by the Kernel
  */
 public class BlackScreenDisplayable extends Displayable {
 

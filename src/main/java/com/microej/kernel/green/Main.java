@@ -6,19 +6,26 @@
  */
 package com.microej.kernel.green;
 
+import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.NetPermission;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketPermission;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.PropertyPermission;
 import java.util.logging.Logger;
+
+import javax.net.ssl.SSLPermission;
 
 import com.microej.kernel.green.gui.GUIManager;
 import com.microej.kernel.green.localdeploy.CommandServer;
 import com.microej.kernel.green.ntp.NTPService;
+import com.microej.kernel.green.security.PermissionLogger;
 import com.microej.kernel.green.storage.StorageKfFs;
 import com.microej.kf.util.BooleanConverter;
 import com.microej.kf.util.ByteConverter;
@@ -34,6 +41,8 @@ import com.microej.kf.util.LongConverter;
 import com.microej.kf.util.MapConverter;
 import com.microej.kf.util.ShortConverter;
 import com.microej.kf.util.StringConverter;
+import com.microej.kf.util.security.KernelSecurityManager;
+import com.microej.kf.util.service.ServiceRegistryKF;
 import com.microej.wadapps.connectivity.ConnectivityManagerKF;
 
 import android.net.ConnectivityManager;
@@ -48,10 +57,15 @@ import ej.kf.FeatureStateListener;
 import ej.kf.IncompatibleFeatureException;
 import ej.kf.InvalidFormatException;
 import ej.kf.Kernel;
+import ej.microui.MicroUIPermission;
+import ej.microui.display.DisplayPermission;
+import ej.microui.display.FontPermission;
+import ej.microui.display.ImagePermission;
+import ej.microui.event.EventPermission;
 import ej.net.HttpPollerConnectivityManager;
 import ej.service.ServiceFactory;
+import ej.service.ServicePermission;
 import ej.storage.Storage;
-import ej.wadapps.service.SharedServiceFactory;
 
 /**
  * Main class for the kernel, any code executed in the Kernel is called from this class.
@@ -76,37 +90,50 @@ public class Main {
 
 		LOGGER.info("Kernel startup");
 
+		// Initialize security management
+		LOGGER.info("Initializing custom Security Manager");
+		registerSecurityManager();
+
 		// Start MicroUI and show a black screen until an application requests the display
 		// Also register a FeatureStateListener to handle the display on feature stop
 		GUIManager.initUI();
 
-		// register official kernel converters, see the documentation:
+		// Register official kernel converters, see the documentation:
 		// https://docs.microej.com/en/latest/KernelDeveloperGuide/featuresCommunication.html?highlight=converter#kernel-types-converter
-		// for more informations
+		// for more information
 		registerConverters();
 
-		// instantiate classes that will be used as services for features and kernel code.
+		// Instantiate classes that will be used as services for features and kernel code
 		Storage storage = new StorageKfFs();
 		Timer timer = new Timer();
 		ConnectivityManager connectivityManager = new ConnectivityManagerKF(new HttpPollerConnectivityManager(timer));
 
 		LOGGER.info("Registering mandatory services");
 		// register required services.
-		SharedServiceFactory.getSharedServiceRegistry().register(Storage.class, storage);
-		SharedServiceFactory.getSharedServiceRegistry().register(ConnectivityManager.class, connectivityManager);
-		SharedServiceFactory.getSharedServiceRegistry().register(Timer.class, timer);
 
-		// registers a network connectivity callback that logs available network interfaces
+		// use generic service factory that register service in local
+		ServiceFactory.register(Timer.class, timer);
+
+		// use kf implementation for kernel to allow to specify the registry context
+		final ServiceRegistryKF serviceRegistryKF = (ServiceRegistryKF) ServiceFactory.getServiceRegistry();
+
+		// store in local context
+		serviceRegistryKF.register(ConnectivityManager.class, connectivityManager, true);
+
+		// store in shared context
+		serviceRegistryKF.register(Storage.class, storage, false);
+
+		// register a network connectivity callback that logs available network interfaces
 		registerLogConnectivity();
 
 		LOGGER.info("Registering featureStateListener");
-		// Create a new FeatureStateListener to handle stuff when a feature state changes.
+		// Create a new FeatureStateListener to trigger actions on feature state changes
 		Kernel.addFeatureStateListener(new FeatureStateListener() {
 
 			@Override
 			public void stateChanged(Feature feature, State previousState) {
 
-				// log any feature state change
+				// Log any feature state change
 				StringBuilder sbLogMsg = new StringBuilder();
 				State currentState = feature.getState();
 				if (previousState != null) {
@@ -126,7 +153,7 @@ public class Main {
 		});
 
 		LOGGER.info("Loading and installing features from the storage (FS)");
-		// load and install all features from the storage
+		// Load and install all features from the storage
 		for (String token : listApplications(storage.getIds())) {
 			try (InputStream stream = storage.load(token)) {
 
@@ -138,17 +165,14 @@ public class Main {
 						"A feature has been removed from the storage because it was not compatible with the kernel or already loaded ");
 				storage.remove(token);
 			}
-
 		}
 
-		LOGGER.info("Starting NTP and CommandServerSocket");
-		// Start the command-server-socket and the ntp service to be run directly within the kernel.
-
+		LOGGER.info("Starting NTP and CommandServer");
+		// Start the CommandServer and the NTP services
 		new NTPService().start();
-
 		new CommandServer().startServer();
 
-		// start all features loaded in the kernel.
+		// Start all features loaded in the kernel
 		for (Feature feature : Kernel.getAllLoadedFeatures()) {
 			feature.start();
 		}
@@ -188,7 +212,7 @@ public class Main {
 	}
 
 	/**
-	 * Logs the list of registered {@link NetworkInterface}.
+	 * Log the list of registered {@link NetworkInterface}.
 	 */
 	private static void logNetworkInterfaces() {
 		LOGGER.info("Available Network interfaces:");
@@ -225,6 +249,42 @@ public class Main {
 	}
 
 	/**
+	 * Create and register a custom {@link SecurityManager} that will log all permission requests.
+	 */
+	private static void registerSecurityManager() {
+
+		// For the permission checks to occur the security management capability must be enabled first
+		// See https://docs.microej.com/en/latest/KernelDeveloperGuide/kernelCreation.html#implement-a-security-policy
+
+		// Instantiate the SecurityManager object to be registered
+		final KernelSecurityManager securityManager = new KernelSecurityManager();
+
+		// Instantiate the FeaturePermissionCheckDelegate object that will handle the actual permission checks
+		// This implementation always grants the permission being checked and logs the event with the specified logger
+		// and log level
+		final PermissionLogger permissionLogger = new PermissionLogger(LOGGER, java.util.logging.Level.INFO);
+
+		// Register the instantiated FeaturePermissionCheckDelegate for checking all the supported permissions
+		securityManager.setFeaturePermissionDelegate(DisplayPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(EventPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(FilePermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(FontPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(ImagePermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(MicroUIPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(NetPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(ej.property.PropertyPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(PropertyPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(RuntimePermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(ServicePermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(SocketPermission.class, permissionLogger);
+		securityManager.setFeaturePermissionDelegate(SSLPermission.class, permissionLogger);
+
+		// Register the instantiated SecurityManager object as the system-wide security manager
+		System.setSecurityManager(securityManager);
+
+	}
+
+	/**
 	 * Register Kernel converters.
 	 * <p>
 	 * If overriding this method, sub-classes MUST this implementation.
@@ -247,5 +307,6 @@ public class Main {
 		Kernel.addConverter(new ListConverter<>());
 		Kernel.addConverter(new MapConverter<>());
 		Kernel.addConverter(new IProgressMonitorConverter());
+
 	}
 }
