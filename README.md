@@ -96,7 +96,7 @@ In more detail the Kernel implements the following specification.
 
     Please refer to the [Security Management](#security-management) section for more information.
 
-# Setup the Kernel Project
+# Set up the Kernel Project
 
 ## Prerequisites
 
@@ -123,7 +123,11 @@ The Kernel can be built using any VEE Port that provides the following Foundatio
 **WARNING**: The VEE Port must be built with [Multi-Sandbox](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html) capability.  
 Check out the [VEE Porting Guide](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html#installation) for more information about enabling Multi-Sandbox capacities.
 
-The Kernel has been tested against the [VEE Port for STMicroelectronics STM32F7508-DK Discovery Kit](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK) v2.0.0.
+#### Reference VEE Ports
+
+The Kernel has been tested against the following reference VEE Ports:
+- [VEE Port for NXP i.MX RT1170 EVK v2.1.0](https://github.com/nxp-mcuxpresso/nxp-vee-imxrt1170-evk)
+- [VEE Port for STMicroelectronics STM32F7508-DK Discovery Kit v2.0.0](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK)
 
 ## Import the Kernel Project in the SDK
 
@@ -151,7 +155,7 @@ The VEE Port can be configured in one of the following ways:
 
 This approach allows for building the Kernel against a VEE Port which sources are fetched locally. _Kernel GREEN_ is indeed not bound to a specific VEE Port and can be built against any other VEE Port as long as the [VEE Port requirements](#vee-port) are met.
 
-As for the reference VEE Port for `STMicroelectronics STM32F7508-DK Discovery Kit` sources may be retrieved by cloning the [VEE Port repository available on GitHub](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK).
+Sources for the reference VEE Ports are [available on GitHub](#reference-vee-ports).
 
 In order to specify the VEE Port source directory, please refer to the instructions described in the [`module.ivy`](./module.ivy) file.
 
@@ -159,7 +163,7 @@ In order to specify the VEE Port source directory, please refer to the instructi
 
 This approach allows for fetching the VEE Port sources from a MicroEJ repository. By default the MicroEJ SDK is configured to fetch VEE Ports from the [Developer Repository](https://docs.microej.com/en/latest/SDKUserGuide/repository.html#developer-repository).
 
-In order to declare the VEE Port dependency, set the organization, name and version in the [module.properties](./module.properties) file. By default the VEE Port for _STMicroelectronics STM32F7508-DK Discovery Kit_ with the STM32CubeIDE / GCC C toolchain is selected as the target VEE Port.
+In order to declare the VEE Port dependency, set the organization, name and version in the [module.properties](./module.properties) file.
 
 For the VEE Port dependency to be resolved in the workspace, add the aforementioned properties file to the _Ant_ runtime by following the below steps.
 - Open `Window` > `Preferences`.
@@ -173,7 +177,7 @@ For the VEE Port dependency to be resolved in the workspace, add the aforementio
 
 Before going any further with the build the VEE Port must be set up with toolchain-specific environment variables and BSP Connection options.
 
-Please refer to the VEE Port specific documentation for more details. For the reference VEE Port for `STMicroelectronics STM32F7508-DK Discovery Kit` this information can be found in the [VEE Port README file](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK#readme).
+Please refer to the VEE Port specific documentation for more details. As for the [reference VEE Ports](#reference-vee-ports), please refer to the project _README_ file.
 
 Also, please remember that a valid MicroEJ License is required for building. Please refer to [this section from the MicroEJ SDK User Guide](https://docs.microej.com/en/latest/SDKUserGuide/licenses.html#evaluation-licenses) to get help on obtaining and installing a MicroEJ Evaluation License.
 
@@ -288,5 +292,5 @@ final FeaturePermissionCheckDelegate permissionDenier = new FeaturePermissionChe
 securityManager.setFeaturePermissionDelegate(NetPermission.class, permissionDenier);
 ```
 ---
-_Copyright 2021-2023 MicroEJ Corp. All rights reserved._  
+_Copyright 2021-2024 MicroEJ Corp. All rights reserved._  
 _Use of this source code is governed by a BSD-style license that can be found with this software._

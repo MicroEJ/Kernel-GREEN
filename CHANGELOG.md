@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.0] - 2024-02-16
+
+### Changed
+
+- Add VEE Port for NXP i.MX RT1170 EVK to reference VEE Ports.
+
 ## [1.2.0] - 2023-10-27
 
 ### Added
@@ -57,5 +63,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - NTP system application.
   
 ---
-_Copyright 2021-2023 MicroEJ Corp. All rights reserved._  
+_Copyright 2021-2024 MicroEJ Corp. All rights reserved._  
 _Use of this source code is governed by a BSD-style license that can be found with this software._  
