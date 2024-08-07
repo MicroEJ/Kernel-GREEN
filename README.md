@@ -22,79 +22,81 @@ From a top-level perspective the Kernel provides the following services.
 
 * **Network services**
 
-  * [CommandServer](./src/main/java/com/microej/kernel/green/localdeploy/CommandServer.java)
+    * [CommandServer](./src/main/java/com/microej/kernel/green/localdeploy/CommandServer.java)
 
-    Listens for lifecycle management commands on port `4000` and handles them.
+      Listens for lifecycle management commands on port `4000` and handles them.
 
-  * [NTPService](./src/main/java/com/microej/kernel/green/ntp/NTPService.java)
+    * [NTPService](./src/main/java/com/microej/kernel/green/ntp/NTPService.java)
 
-    Synchronizes the system clock using the Network Time Protocol.
+      Synchronizes the system clock using the Network Time Protocol.
 
 * **Application services**
 
-  * **Kernel-local services** (services registered by the Kernel and only accessible from the Kernel context)
+    * **Kernel-local services** (services registered by the Kernel and only accessible from the Kernel context)
 
-    * [ConnectivityManager](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.NetworkCallback.html)
+        * [ConnectivityManager](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.NetworkCallback.html)
 
-      Allows for querying the state of network connectivity and getting notified of network connectivity changes.
+          Allows for querying the state of network connectivity and getting notified of network connectivity changes.
 
-    * [Timer](https://repository.microej.com/javadoc/microej_5.x/apis/ej/bon/Timer.html)
+        * [Timer](https://repository.microej.com/javadoc/microej_5.x/apis/ej/bon/Timer.html)
 
-      Allows scheduling possibly repeating background tasks in an efficient way.
+          Allows scheduling possibly repeating background tasks in an efficient way.
 
-  * **Shared services** (services registered by the Kernel and accessible from the Sandboxed Applications context)
+    * **Shared services** (services registered by the Kernel and accessible from the Sandboxed Applications context)
 
-    * [Storage](./src/main/java/com/microej/kernel/green/storage/StorageKfFs.java)
+        * [Storage](./src/main/java/com/microej/kernel/green/storage/StorageKfFs.java)
 
-      Eases up data storage/retrieval to/from the persistent storage.
+          Eases up data storage/retrieval to/from the persistent storage.
 
 In more detail the Kernel implements the following specification.
 
 - Sandboxed Applications Lifecycle
 
-  - Enables the deployment of Sandboxed Applications from the MICROEJ SDK to your device through a TCP/IP connection.
-    Features `.fo` files are also persisted.
+    - Enables the deployment of Sandboxed Applications from the MICROEJ SDK to your device through a TCP/IP connection.
+      Features `.fo` files are also persisted.
 
-  - Automatically starts all previously deployed Sandboxed Applications during boot.
+    - Automatically starts all previously deployed Sandboxed Applications during boot.
 
-  - Registers an instance of [ej.kf.FeatureStateListener](https://repository.microej.com/javadoc/microej_5.x/apis/ej/kf/FeatureStateListener.html) to log when the state of an Application changes.
+    - Registers an instance of [ej.kf.FeatureStateListener](https://repository.microej.com/javadoc/microej_5.x/apis/ej/kf/FeatureStateListener.html) to log when the state of an Application changes.
 
 - Runtime
 
-  - Registers an instance of [ej.bon.Timer](https://repository.microej.com/javadoc/microej_5.x/apis/ej/bon/Timer.html) as a Kernel-local service allowing for scheduling time-based tasks without extra-thread creation.
+    - Registers an instance of [ej.bon.Timer](https://repository.microej.com/javadoc/microej_5.x/apis/ej/bon/Timer.html) as a Kernel-local service allowing for scheduling time-based tasks without extra-thread creation.
 
-  - Enables communication between Sandboxed Applications using [Shared Interfaces](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedAppSharedInterface.html).
+    - Enables communication between Sandboxed Applications using [Shared Interfaces](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedAppSharedInterface.html).
 
-    - Registers default [Kernel converters](https://docs.microej.com/en/latest/KernelDeveloperGuide/featuresCommunication.html?kernel-types-converter).
+        - Registers default [Kernel converters](https://docs.microej.com/en/latest/KernelDeveloperGuide/featuresCommunication.html?kernel-types-converter).
 
-    - Provides a Shared Registry for Sandboxed Applications to register and retrieve services declared as Shared Interfaces.
+        - Provides a Shared Registry for Sandboxed Applications to register and retrieve services declared as Shared Interfaces.
 
 - Networking
 
-  - Starts the [ServerSocket](https://repository.microej.com/javadoc/microej_5.x/apis/java/net/ServerSocket.html) and listens for Sandboxed Applications deployment commands.
+    - Starts the [ServerSocket](https://repository.microej.com/javadoc/microej_5.x/apis/java/net/ServerSocket.html) and listens for Sandboxed Applications deployment commands.
 
-  - Registers an instance of [android.net.ConnectivityManager](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.html) as a Kernel-local service allowing for monitoring network connectivity.
+    - Registers an instance of [android.net.ConnectivityManager](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.html) as a Kernel-local service allowing for monitoring network connectivity.
 
-  - Registers an [android.net.ConnectivityManager.NetworkCallback](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.NetworkCallback.html) that logs all available network interfaces on network state change.
+    - Registers an [android.net.ConnectivityManager.NetworkCallback](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.NetworkCallback.html) that logs all available network interfaces on network state change.
 
-  - Synchronizes the time of the device using NTP.
+    - Synchronizes the time of the device using NTP.
 
 - Persistency
 
-  - Registers an instance of [ej.storage.Storage](https://repository.microej.com/javadoc/microej_5.x/apis/ej/storage/Storage.html) as a shared service to provide Sandboxed Applications with a simple persistency mechanism.
-    The implementation is based on FS (File System) API. The Kernel and each Sandboxed Application have their own data space.
+    - Registers an instance of [ej.storage.Storage](https://repository.microej.com/javadoc/microej_5.x/apis/ej/storage/Storage.html) as a shared service to provide Sandboxed Applications with a simple persistency mechanism.
+      The implementation is based on FS (File System) API. The Kernel and each Sandboxed Application have their own data space.
 
 - Graphical User Interface
 
-  - Starts the MicroUI Graphical Engine.
+    - Starts the MicroUI Graphical Engine.
 
-  - Initializes the display with a [black screen](./src/main/java/com/microej/firmware/developer/green/BlackScreenDisplayable.java). When a Sandboxed Application is uninstalled, the Kernel checks if itself or any other started application do own a [Displayable](https://repository.microej.com/javadoc/microej_5.x/apis/index.html?ej/microui/display/Displayable.html) object, if none is found, it will render a new black screen.
+    - Initializes the display with a [black screen](./src/main/java/com/microej/firmware/developer/green/BlackScreenDisplayable.java). When a Sandboxed Application is uninstalled, the Kernel checks if itself or any other started application do own a [Displayable](https://repository.microej.com/javadoc/microej_5.x/apis/index.html?ej/microui/display/Displayable.html) object, if none is found, it will render a new black screen.
 
 - Security Management
 
-  - Registers a logging-only [SecurityManager](https://repository.microej.com/javadoc/microej_5.x/apis/java/lang/SecurityManager.html) that grants any permission from any application and logs the event to the debug console.
+    - By default, registers a logging-only [SecurityManager](https://repository.microej.com/javadoc/microej_5.x/apis/java/lang/SecurityManager.html) that grants any permission from any application and logs the event to the debug console.
 
-    Please refer to the [Security Management](#security-management) section for more information.
+    - Configuration can be done to use a security management based on policy files coming from applications instead.
+
+      Please refer to the [Security Management](#security-management) section for more information.
 
 # Set up the Kernel Project
 
@@ -126,8 +128,24 @@ Check out the [VEE Porting Guide](https://docs.microej.com/en/latest/VEEPortingG
 #### Reference VEE Ports
 
 The Kernel has been tested against the following reference VEE Ports:
-- [VEE Port for NXP i.MX RT1170 EVK v2.1.0](https://github.com/nxp-mcuxpresso/nxp-vee-imxrt1170-evk)
-- [VEE Port for STMicroelectronics STM32F7508-DK Discovery Kit v2.0.0](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK)
+- [VEE Port for STMicroelectronics STM32F7508-DK Discovery Kit v2.0.0](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK/tree/2.0.0)
+- [VEE Port for NXP i.MX RT1170 EVK v2.1.1](https://github.com/nxp-mcuxpresso/nxp-vee-imxrt1170-evk/tree/NXPVEE-MIMXRT1170-EVK-2.1.1)
+
+##### Reference VEE Ports version compatibility matrix
+
+###### STM32F7508-DK
+
+| Kernel version | VEE Port version |
+|----------------|------------------|
+| 1.3.0          | 2.0.0            |
+| 1.4.0          | 2.0.0            |
+
+###### NXP i.MX RT1170 EVK
+
+| Kernel version | VEE Port version |
+|----------------|------------------|
+| 1.3.0          | 2.1.1            |
+| 1.4.0          | 2.1.1            |
 
 ## Import the Kernel Project in the SDK
 
@@ -161,7 +179,7 @@ In order to specify the VEE Port source directory, please refer to the instructi
 
 ### Declaring the VEE Port as a Module Dependency
 
-This approach allows for fetching the VEE Port sources from a MicroEJ repository. By default the MicroEJ SDK is configured to fetch VEE Ports from the [Developer Repository](https://docs.microej.com/en/latest/SDKUserGuide/repository.html#developer-repository).
+This approach allows for fetching the VEE Port sources from a MicroEJ repository. By default, the MicroEJ SDK is configured to fetch VEE Ports from the [Developer Repository](https://docs.microej.com/en/latest/SDKUserGuide/repository.html#developer-repository).
 
 In order to declare the VEE Port dependency, set the organization, name and version in the [module.properties](./module.properties) file.
 
@@ -175,7 +193,7 @@ For the VEE Port dependency to be resolved in the workspace, add the aforementio
 
 ## Set up the VEE Port build environment
 
-Before going any further with the build the VEE Port must be set up with toolchain-specific environment variables and BSP Connection options.
+Before going any further with the build, the VEE Port must be set up with toolchain-specific environment variables and BSP Connection options.
 
 Please refer to the VEE Port specific documentation for more details. As for the [reference VEE Ports](#reference-vee-ports), please refer to the project _README_ file.
 
@@ -220,15 +238,12 @@ The following sections deal with specific topics you may want to experiment with
 
 _Note: please refer to [this section](https://docs.microej.com/en/latest/KernelDeveloperGuide/kernelCreation.html#implement-a-security-policy) from the [Kernel Developer Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/index.html) to get a primer on security management._
 
-_Kernel GREEN_ provides a logging-only [SecurityManager](https://repository.microej.com/javadoc/microej_5.x/apis/java/lang/SecurityManager.html) in order to demonstrate how the Kernel may restrict sensitive or possibly unsafe operations performed by applications.
+_Kernel GREEN_ provides two ready-to-use implementations:
+- (default) a logging-only policy using [KernelSecurityManager](https://repository.microej.com/javadoc/microej_5.x/apis/com/microej/kf/util/security/KernelSecurityManager.html) in order to demonstrate how the Kernel may restrict sensitive or possibly unsafe operations performed by applications.
+- an actual security policy based on resource file from applications using [KernelSecurityPolicyManager](https://repository.microej.com/javadoc/microej_5.x/apis/com/microej/kf/util/security/KernelSecurityPolicyManager.html) that allows application to describe permissions they will need at runtime.
 
-When enabled this security manager logs on the debug console any attempt from applications to perform a restricted operation before authorizing it, providing a similar output to below.
 
-```
-Granted permission 'java.net.NetPermission' with action 'getNetworkInformation' for feature 'Feature'
-```
-
-These operations cover all operations restricted by one of the supported [Permission](https://repository.microej.com/javadoc/microej_5.x/apis/java/security/Permission.html)s which are:
+These operations cover all operations restricted by one of the supported [Permission](https://repository.microej.com/javadoc/microej_5.x/apis/java/security/Permission.html)s which are, in this Kernel:
 
 - [DisplayPermission](https://repository.microej.com/javadoc/microej_5.x/apis/ej/microui/display/DisplayPermission.html)
 - [EventPermission](https://repository.microej.com/javadoc/microej_5.x/apis/ej/microui/event/EventPermission.html)
@@ -244,53 +259,88 @@ These operations cover all operations restricted by one of the supported [Permis
 - [SocketPermission](https://repository.microej.com/javadoc/microej_5.x/apis/java/net/SocketPermission.html)
 - [SSLPermission](https://repository.microej.com/javadoc/microej_5.x/apis/javax/net/ssl/SSLPermission.html)
 
-The Kernel maps all permissions to the same [PermissionLogger](./src/main/java/com/microej/kernel/green/security/PermissionLogger.java) instance that simply grants the permission to any application and logs the event to the debug console.
 
-However more complex permission checks can be implemented by following the steps below.
+To switch between the two ready-to-use implementations listed above, you can edit the [security.properties.list](src/main/resources/security.properties.list) file by updating the ``security.manager.mode`` property value to the following values:
+- ``LOGGING`` (default): uses the logging only security management policy to show any protected access by any application at runtime.
+- ``POLICY_FILE``: uses the resource file based system to allow each application to describe permissions it will need at runtime.
 
-1. Define a _permission check delegate_ class that implements the [FeaturePermissionCheckDelegate](https://repository.microej.com/javadoc/microej_5.x/apis/com/microej/kf/util/security/FeaturePermissionCheckDelegate.html) interface like `CustomPermissionCheckDelegate` below.
+A more complete explanation of these implementations is available on the [MicroEJ Developer Website](https://docs.microej.com/en/latest/KernelDeveloperGuide/applicationSecurityPolicy.html) in the  ``Application security policy`` section.
 
-   ```Java
-   public class CustomPermissionCheckDelegate implements FeaturePermissionCheckDelegate {
 
-       @Override
-       public void checkPermission(Permission permission, Feature feature) {
+# Troubleshooting
 
-           // Actual permission check goes here...
 
-       }
+## The local specified VEE Port sources path is not correctly set
 
-   }
-   ```
-
-2. Associate an instance of this _permission check delegate_ class with the [Permission](https://repository.microej.com/javadoc/microej_5.x/apis/java/security/Permission.html) to be checked (like `NetPermission` in the example below) by means of the security manager.
-
-   ```Java
-   KernelSecurityManager securityManager = new KernelSecurityManager();
-
-   // ...
-
-   securityManager.setFeaturePermissionDelegate(NetPermission.class, new CustomPermissionCheckDelegate());
-   ```
-
-As an example one may want to prevent applications from performing network operations that may be considered harmful.
-
-This may be achieved on the Kernel-side by unconditionally denying the [NetPermission](https://repository.microej.com/javadoc/microej_5.x/apis/java/net/NetPermission.html) to all applications like so.
-
-```Java
-final KernelSecurityManager securityManager = new KernelSecurityManager();
-
-// Allocate a FeaturePermissionCheckDelegate denying any permission from any application...
-final FeaturePermissionCheckDelegate permissionDenier = new FeaturePermissionCheckDelegate() {
-	@Override
-	public void checkPermission(Permission permission, Feature feature) {
-		throw new SecurityException();
-	}
-};
-
-// ... and associate this FeaturePermissionCheckDelegate instance with the Permission to be denied
-securityManager.setFeaturePermissionDelegate(NetPermission.class, permissionDenier);
 ```
+    platform-loader:set-use-dir:
+    [echo] Platform loaded from property `platform-loader.target.platform.dir`. []
+
+    platform-loader:load-platform-dir:
+    [copy] Copying 206 files to C:\Users\microej\Kernel-Green\target~\virtualDevice
+    [copy] Copied 79 empty directories to 23 empty directories under C:\Users\microej\Kernel-Green\target~\virtualDevice
+
+    BUILD FAILED
+    Found an error when building GREEN
+    * Where
+
+    File : C:\Program Files\MicroEJ\MicroEJ-SDK-23.07\rcp\configuration\org.eclipse.osgi\515\data\repositories\microej-build-repository\com\is2t\easyant\plugins\platform-loader\2.1.0\platform-loader-2.1.0.ant
+    Line : 377 column : 167
+
+    * Problem Report:
+
+    The Platform must have been built from an Architecture version 7.10.0 or higher (Architecture version not found)
+```
+
+This issue is caused by a wrong path to the local VEE Port sources folder, please double check the ``platform-loader.target.platform.dir`` property in the [module.ivy](./module.ivy) file
+
+
+## The specified VEE Port does not have Multi-Sandbox capabilities
+
+```
+    spawn-jvm:
+    [java] Buildfile: C:\Program Files\MicroEJ\MicroEJ-SDK-23.07\rcp\configuration\org.eclipse.osgi\515\data\repositories\microej-build-repository\com\is2t\easyant\plugins\platform-launcher\4.1.0\launch-4.1.0.xml
+    [java] init:
+    [java] launch:
+    [java] BUILD FAILED
+    [java] C:\Program Files\MicroEJ\MicroEJ-SDK-23.07\rcp\configuration\org.eclipse.osgi\515\data\repositories\microej-build-repository\com\is2t\easyant\plugins\platform-launcher\4.1.0\launch-4.1.0.xml:25: The following error occurred while executing this line:
+    [java] java.io.FileNotFoundException: C:\Users\microej\Kernel-Green\target~\virtualDevice\scripts\kernelPackager.microejTool (The system cannot find the file specified)
+    [java] 	at java.io.FileInputStream.open(Native Method)
+    [java] 	at java.io.FileInputStream.<init>(FileInputStream.java:131)
+    [java] 	at org.apache.tools.ant.helper.ProjectHelper2.parse(ProjectHelper2.java:250)
+    [java] 	at org.apache.tools.ant.helper.ProjectHelper2.parse(ProjectHelper2.java:178)
+    [java] 	at org.apache.tools.ant.ProjectHelper.configureProject(ProjectHelper.java:93)
+    [java] 	at org.apache.tools.ant.taskdefs.Ant.execute(Ant.java:392)
+    [java] 	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:293)
+    [java] 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    [java] 	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    [java] 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    [java] 	at java.lang.reflect.Method.invoke(Method.java:483)
+    [java] 	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:106)
+    [java] 	at org.apache.tools.ant.Task.perform(Task.java:348)
+    [java] 	at org.apache.tools.ant.Target.execute(Target.java:435)
+    [java] 	at org.apache.tools.ant.Target.performTasks(Target.java:456)
+    [java] 	at org.apache.tools.ant.Project.executeSortedTargets(Project.java:1405)
+    [java] 	at org.apache.tools.ant.Project.executeTarget(Project.java:1376)
+    [java] 	at org.apache.tools.ant.helper.DefaultExecutor.executeTargets(DefaultExecutor.java:41)
+    [java] 	at org.apache.tools.ant.Project.executeTargets(Project.java:1260)
+    [java] 	at org.apache.tools.ant.Main.runBuild(Main.java:857)
+    [java] 	at org.apache.tools.ant.Main.startAnt(Main.java:236)
+    [java] 	at org.apache.tools.ant.Main.start(Main.java:199)
+    [java] 	at org.apache.tools.ant.Main.main(Main.java:287)
+    [java] Total time: 0 seconds
+
+    BUILD FAILED
+    Found an error when building GREEN
+    * Where
+    
+    File : C:\Program Files\MicroEJ\MicroEJ-SDK-23.07\rcp\configuration\org.eclipse.osgi\515\data\repositories\microej-build-repository\com\is2t\easyant\plugins\kernel-packager\5.1.0\kernel-packager-5.1.0.ant
+    Line : 109 column : 5
+```
+
+This error will appear when trying to build a Kernel against a VEE Port that does not have Multi-Sandboxed capabilities. To fix this issue, update the value of the property ``com.microej.platformbuilder.module.multi.enabled`` to ``true`` (this property is usually set in the ``module.properties`` file from the ``configuration`` project of the VEE Port).
+
+
 ---
 _Copyright 2021-2024 MicroEJ Corp. All rights reserved._  
 _Use of this source code is governed by a BSD-style license that can be found with this software._

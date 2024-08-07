@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2024-08-07
+
+### Changed
+
+- Upgrade `com.microej.library.util#kf-util` to version `2.8.0`.
+
+### Added
+
+- Add a new security manager mode to use resource policy file from applications.
+- Add a section in the ``README`` file for Kernel and reference VEE Ports compatibility.
+- Add a section in the ``README`` file for troubleshooting.
+
+## [1.3.1] - 2024-02-29
+
+### Changed
+
+- Upgrade `com.microej.library.util#kf-util` to version `2.7.1`.
 
 ## [1.3.0] - 2024-02-16
 

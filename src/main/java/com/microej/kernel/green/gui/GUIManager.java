@@ -1,7 +1,7 @@
 /*
  * Java
  *
- * Copyright 2023 MicroEJ Corp. All rights reserved.
+ * Copyright 2023-2024 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 package com.microej.kernel.green.gui;
@@ -21,7 +21,7 @@ import ej.microui.display.Display;
 public class GUIManager {
 
 	private GUIManager() {
-
+		// disable the public constructor
 	}
 
 	/**
@@ -50,38 +50,45 @@ public class GUIManager {
 						return;
 					}
 
-					// Iterate over each started feature (except the one stopping) and check if they have a Displayable.
-					for (Feature f : Kernel.getAllLoadedFeatures()) {
-						if (f == feature || f.getState() != State.STARTED) {
-							continue;
-						}
-
-						RunnableWithResult<Boolean> displayableExists = new RunnableWithResult<Boolean>() {
-
-							@Override
-							protected Boolean runWithResult() {
-
-								// Check if the feature has a display, if so, no black screen is needed
-								return Boolean.valueOf(Display.getDisplay().getDisplayable() != null);
-
-							}
-						};
-
-						// Execute code under the feature context to check if it has a Displayable
-						Kernel.runUnderContext(f, displayableExists);
-
-						// At least one application has a Displayable therefore we know we won't need the black screen.
-						if (displayableExists.getResult().booleanValue()) {
-							return;
-						}
+					if (!checkForExistingDisplayableInFeatures(feature)) {
+						// The Kernel or a feature has a Displayable, do not show any black screen
+						Display.getDisplay().requestShow(new BlackScreenDisplayable());
 					}
-
-					// If we reach this line, it means that neither the Kernel or applications have a Displayable so we
-					// render a new black screen
-					Display.getDisplay().requestShow(new BlackScreenDisplayable());
 				}
 
 			}
 		});
+	}
+
+	private static boolean checkForExistingDisplayableInFeatures(Feature stoppedFeature) {
+		// Iterate over each started feature (except the one stopping) and check if they have a Displayable.
+		for (Feature f : Kernel.getAllLoadedFeatures()) {
+			if (f == stoppedFeature || f.getState() != State.STARTED) {
+				continue;
+			}
+
+			RunnableWithResult<Boolean> displayableExists = new RunnableWithResult<Boolean>() {
+
+				@Override
+				protected Boolean runWithResult() {
+
+					// Check if the feature has a display, if so, no black screen is needed
+					return Boolean.valueOf(Display.getDisplay().getDisplayable() != null);
+
+				}
+			};
+
+			// Execute code under the feature context to check if it has a Displayable
+			Kernel.runUnderContext(f, displayableExists);
+
+			// At least one application has a Displayable therefore we know we won't need the black screen.
+
+			if (displayableExists.getResult().booleanValue()) {
+				return true;
+			}
+		}
+
+		// No feature with Displayable found
+		return false;
 	}
 }

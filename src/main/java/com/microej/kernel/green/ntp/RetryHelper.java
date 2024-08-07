@@ -1,10 +1,12 @@
 /*
  * Java
  *
- * Copyright 2023 MicroEJ Corp. All rights reserved.
+ * Copyright 2023-2024 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 package com.microej.kernel.green.ntp;
+
+import java.util.logging.Level;
 
 import com.microej.kernel.green.Main;
 
@@ -103,7 +105,11 @@ public class RetryHelper {
 						// all try failed, do not schedule update time anymore
 						cancelRetryTask();
 					} else {
-						Main.LOGGER.info("Update remaining retries : " + this.remainingAttempts);
+						// update fail, remaining attempt is strictly positive, don't cancel the retry task
+						if (Main.LOGGER.isLoggable(Level.INFO)) {
+							// Log if log level is info or above
+							Main.LOGGER.info("Update remaining retries : " + this.remainingAttempts); // NOSONAR
+						}
 					}
 				}
 			}

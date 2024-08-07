@@ -1,31 +1,26 @@
 /*
  * Java
  *
- * Copyright 2021-2023 MicroEJ Corp. All rights reserved.
+ * Copyright 2021-2024 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 package com.microej.kernel.green;
 
-import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.NetPermission;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.SocketPermission;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.PropertyPermission;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.net.ssl.SSLPermission;
 
 import com.microej.kernel.green.gui.GUIManager;
 import com.microej.kernel.green.localdeploy.CommandServer;
 import com.microej.kernel.green.ntp.NTPService;
-import com.microej.kernel.green.security.PermissionLogger;
+import com.microej.kernel.green.security.SecurityInit;
 import com.microej.kernel.green.storage.StorageKfFs;
 import com.microej.kf.util.BooleanConverter;
 import com.microej.kf.util.ByteConverter;
@@ -41,7 +36,6 @@ import com.microej.kf.util.LongConverter;
 import com.microej.kf.util.MapConverter;
 import com.microej.kf.util.ShortConverter;
 import com.microej.kf.util.StringConverter;
-import com.microej.kf.util.security.KernelSecurityManager;
 import com.microej.kf.util.service.ServiceRegistryKF;
 import com.microej.wadapps.connectivity.ConnectivityManagerKF;
 
@@ -57,14 +51,8 @@ import ej.kf.FeatureStateListener;
 import ej.kf.IncompatibleFeatureException;
 import ej.kf.InvalidFormatException;
 import ej.kf.Kernel;
-import ej.microui.MicroUIPermission;
-import ej.microui.display.DisplayPermission;
-import ej.microui.display.FontPermission;
-import ej.microui.display.ImagePermission;
-import ej.microui.event.EventPermission;
 import ej.net.HttpPollerConnectivityManager;
 import ej.service.ServiceFactory;
-import ej.service.ServicePermission;
 import ej.storage.Storage;
 
 /**
@@ -90,9 +78,8 @@ public class Main {
 
 		LOGGER.info("Kernel startup");
 
-		// Initialize security management
-		LOGGER.info("Initializing custom Security Manager");
-		registerSecurityManager();
+		// Initialize security management policy
+		SecurityInit.initSecurityManager();
 
 		// Start MicroUI and show a black screen until an application requests the display
 		// Also register a FeatureStateListener to handle the display on feature stop
@@ -221,67 +208,69 @@ public class Main {
 		try {
 			interfaces = NetworkInterface.getNetworkInterfaces();
 		} catch (SocketException e) {
-			// We don't handle this exception
+			if (Main.LOGGER.isLoggable(Level.FINEST)) {
+				Main.LOGGER.log(Level.FINEST, e.getMessage(), e); // NOSONAR log if log level is finest or above
+			}
+			return;
 		}
-		if (interfaces != null) {
-			while (interfaces.hasMoreElements()) {
-				NetworkInterface iface = interfaces.nextElement();
-				// filters out 127.0.0.1 and inactive interfaces
-				try {
-					if (!iface.isUp() || iface.isLoopback()) {
-						continue;
-					}
-				} catch (SocketException e) {
-					continue;
-				}
 
-				Enumeration<InetAddress> addresses = iface.getInetAddresses();
-				while (addresses.hasMoreElements()) {
-					noInterface = false;
-					InetAddress addr = addresses.nextElement();
-					LOGGER.info("- " + addr.getHostAddress());
-				}
+		// No interfaces found
+		if (interfaces == null) {
+			return;
+		}
+
+		while (interfaces.hasMoreElements()) {
+
+			NetworkInterface iface = interfaces.nextElement();
+
+			// Log IP valid addresses from the interface and return true if valid addresses are available
+			boolean hasValidIPAdresses = logInterface(iface);
+
+			if (!hasValidIPAdresses) {
+				noInterface = hasValidIPAdresses;
 			}
 		}
+
 		if (noInterface) {
 			LOGGER.info("(none)");
 		}
 	}
 
 	/**
-	 * Create and register a custom {@link SecurityManager} that will log all permission requests.
+	 * Log interface.
+	 *
+	 * @param iface
+	 *            the network interface
+	 * @return true if no valid interface is found, false otherwise
 	 */
-	private static void registerSecurityManager() {
+	private static boolean logInterface(NetworkInterface iface) {
+		boolean interfaceIsValid = true;
 
-		// For the permission checks to occur the security management capability must be enabled first
-		// See https://docs.microej.com/en/latest/KernelDeveloperGuide/kernelCreation.html#implement-a-security-policy
+		// filters out 127.0.0.1 and inactive interfaces
+		try {
+			if (!iface.isUp() || iface.isLoopback()) {
+				interfaceIsValid = false;
+			}
+		} catch (SocketException e) {
+			if (Main.LOGGER.isLoggable(Level.FINEST)) {
+				Main.LOGGER.log(Level.FINEST, e.getMessage(), e); // NOSONAR log if log level is finest or above
+			}
+			interfaceIsValid = false;
+		}
 
-		// Instantiate the SecurityManager object to be registered
-		final KernelSecurityManager securityManager = new KernelSecurityManager();
+		// If the interface is not valid, continue looping
+		if (!interfaceIsValid) {
+			return true;
+		}
 
-		// Instantiate the FeaturePermissionCheckDelegate object that will handle the actual permission checks
-		// This implementation always grants the permission being checked and logs the event with the specified logger
-		// and log level
-		final PermissionLogger permissionLogger = new PermissionLogger(LOGGER, java.util.logging.Level.INFO);
+		Enumeration<InetAddress> addresses = iface.getInetAddresses();
+		while (addresses.hasMoreElements()) {
+			InetAddress addr = addresses.nextElement();
+			LOGGER.info("- " + addr.getHostAddress());
+			return false;
+		}
 
-		// Register the instantiated FeaturePermissionCheckDelegate for checking all the supported permissions
-		securityManager.setFeaturePermissionDelegate(DisplayPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(EventPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(FilePermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(FontPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(ImagePermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(MicroUIPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(NetPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(ej.property.PropertyPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(PropertyPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(RuntimePermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(ServicePermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(SocketPermission.class, permissionLogger);
-		securityManager.setFeaturePermissionDelegate(SSLPermission.class, permissionLogger);
-
-		// Register the instantiated SecurityManager object as the system-wide security manager
-		System.setSecurityManager(securityManager);
-
+		return true;
 	}
 
 	/**

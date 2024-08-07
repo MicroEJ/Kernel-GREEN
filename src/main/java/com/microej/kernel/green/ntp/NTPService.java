@@ -1,7 +1,7 @@
 /*
  * Java
  *
- * Copyright 2023 MicroEJ Corp. All rights reserved.
+ * Copyright 2023-2024 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 package com.microej.kernel.green.ntp;
@@ -84,11 +84,14 @@ public class NTPService implements SimpleNetworkCallback {
 		try {
 			NtpUtil.updateLocalTime(this.url, this.port, NTP_UPDATE_TIMEOUT);
 			updated = Util.currentTimeMillis() > THRESHOLD;
-			if (updated) {
-				Main.LOGGER.info("Updated time: " + new Date(System.currentTimeMillis()));
+			if (updated && Main.LOGGER.isLoggable(Level.INFO)) {
+				// Log when update is successful and if log level is info or above
+				Main.LOGGER.info("Updated time: " + new Date(System.currentTimeMillis())); // NOSONAR
 			}
 		} catch (IOException e) {
-			Main.LOGGER.log(Level.INFO, e.getMessage(), e);
+			if (Main.LOGGER.isLoggable(Level.SEVERE)) {
+				Main.LOGGER.log(Level.SEVERE, e.getMessage(), e); // NOSONAR log if log level is severe or above
+			}
 		}
 
 		return updated;

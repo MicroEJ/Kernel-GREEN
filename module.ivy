@@ -1,29 +1,30 @@
 <!--
 	Ivy
 	
-	Copyright 2021-2023 MicroEJ Corp. All rights reserved.
+	Copyright 2021-2024 MicroEJ Corp. All rights reserved.
 	Use of this source code is governed by a BSD-style license that can be found with this software.
 -->
 
 <ivy-module version="2.0" xmlns:ea="http://www.easyant.org" xmlns:m="http://ant.apache.org/ivy/extra" xmlns:ej="https://developer.microej.com" ej:version="2.0.0">
-	<info organisation="com.microej.kernel" module="GREEN" status="integration" revision="1.3.0">
+	<info organisation="com.microej.kernel" module="GREEN" status="integration" revision="1.4.0">
 		<ea:build organisation="com.is2t.easyant.buildtypes" module="build-firmware-multiapp" revision="8.1.+">
 			<ea:property name="application.main.class" value="com.microej.kernel.green.Main" />
 			<ea:property name="test.run.includes.pattern" value="**/_AllTests_*.class"/>
 			<ea:property name="runtime.api.name" value="GREEN-VD-RUNTIME" />
-	    	<ea:property name="runtime.api.version" value="1.3.0" />
+	    	<ea:property name="runtime.api.version" value="1.4.0" />
 	    	<ea:property name="skip.readme.checker" value="true" />
 			
 			<!--
 				To configure a local VEE Port:
-				- set the path of the source folder of the VEE Port to use.
+				- set the value of the property "platform-loader.target.platform.dir" to the path of the source folder of the VEE Port to use.
 				
 				To configure a module dependency VEE Port:
-				- comment the property "platform-loader.target.platform.dir".
-				- uncomment the VEE Port dependency at the very end of this file.
 				- update the properties in the module.properties file to update the targeted VEE Port.
+				- comment the property "platform-loader.target.platform.dir" below
 			-->
-	    	<ea:property name="platform-loader.target.platform.dir" value="" /> 
+			
+			<ea:property name="platform-loader.target.platform.dir" value="path\to\VEEPort\source" />
+			
 	    	
 		</ea:build>
 	</info>
@@ -55,7 +56,7 @@
 
 		<dependency org="ej.api" name="edc" rev="1.3.5" />
 		<dependency org="ej.api" name="bon" rev="1.4.1" />
-		<dependency org="ej.api" name="kf" rev="1.6.1" />
+		<dependency org="ej.api" name="kf" rev="1.7.0" />
 		<dependency org="ej.api" name="net" rev="1.1.2" />
 		<dependency org="ej.api" name="ssl" rev="2.2.1" />
 		<dependency org="ej.api" name="microui" rev="3.1.1" />
@@ -68,7 +69,7 @@
 		<dependency org="ej.library.eclasspath" name="logging" rev="1.2.1" />
 		<dependency org="ej.library.runtime" name="basictool" rev="1.6.0" />
 		<dependency org="com.microej.library.wadapps" name="connectivity" rev="2.0.0" />
-		<dependency org="com.microej.library.util" name="kf-util" rev="2.7.0"/>
+		<dependency org="com.microej.library.util" name="kf-util" rev="2.8.0"/>
 		<dependency org="ej.library.runtime" name="service" rev="1.2.0" />
 		<dependency org="ej.library.runtime" name="property" rev="4.2.0" />
 		<dependency org="ej.library.runtime" name="storage-fs" rev="1.2.0" /> 
@@ -109,7 +110,7 @@
 		
 		<!-- VEE Port dependency -->
 		
-		<!-- <dependency org="${target.platform.module.org}" name="${target.platform.module.name}" rev="${target.platform.module.version}" branch="${target.platform.module.branch}" conf="platform->default" transitive="false"/> -->
+		<!-- <dependency org="${target.veeport.module.org}" name="${target.veeport.module.name}" rev="${target.veeport.module.version}" branch="${target.veeport.module.branch}" conf="platform->default" transitive="false"/> -->
 		
 	</dependencies>
 </ivy-module>
