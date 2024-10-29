@@ -54,7 +54,7 @@ public class RetryHelper {
 	}
 
 	/**
-	 * Schedule a an update.
+	 * Schedule an update.
 	 *
 	 * @param delay
 	 *            delay in milliseconds before first update.

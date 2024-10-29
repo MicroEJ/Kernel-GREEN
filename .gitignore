@@ -3,3 +3,7 @@ src-adpgenerated
 /bin/
 com.microej.kernel.green.Main
 .scannerwork
+build/
+.cache
+.gradle
+.idea

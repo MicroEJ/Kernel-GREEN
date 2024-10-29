@@ -6,6 +6,25 @@
  */
 package com.microej.kernel.green;
 
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
+import com.microej.kernel.green.gui.GUIManager;
+import com.microej.kernel.green.localdeploy.CommandServer;
+import com.microej.kernel.green.ntp.NTPService;
+import com.microej.kernel.green.security.SecurityInit;
+import com.microej.kernel.green.storage.StorageKfFs;
+import com.microej.kf.connectivity.ConnectivityManagerKF;
+import com.microej.kf.util.*;
+import com.microej.kf.util.service.ServiceRegistryKF;
+import ej.bon.Timer;
+import ej.kf.*;
+import ej.kf.Feature.State;
+import ej.net.HttpPollerConnectivityManager;
+import ej.service.ServiceFactory;
+import ej.storage.Storage;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -16,44 +35,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.microej.kernel.green.gui.GUIManager;
-import com.microej.kernel.green.localdeploy.CommandServer;
-import com.microej.kernel.green.ntp.NTPService;
-import com.microej.kernel.green.security.SecurityInit;
-import com.microej.kernel.green.storage.StorageKfFs;
-import com.microej.kf.util.BooleanConverter;
-import com.microej.kf.util.ByteConverter;
-import com.microej.kf.util.CharacterConverter;
-import com.microej.kf.util.DateConverter;
-import com.microej.kf.util.DoubleConverter;
-import com.microej.kf.util.FloatConverter;
-import com.microej.kf.util.IProgressMonitorConverter;
-import com.microej.kf.util.InputStreamConverter;
-import com.microej.kf.util.IntegerConverter;
-import com.microej.kf.util.ListConverter;
-import com.microej.kf.util.LongConverter;
-import com.microej.kf.util.MapConverter;
-import com.microej.kf.util.ShortConverter;
-import com.microej.kf.util.StringConverter;
-import com.microej.kf.util.service.ServiceRegistryKF;
-import com.microej.wadapps.connectivity.ConnectivityManagerKF;
-
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkInfo;
-import android.net.NetworkRequest;
-import ej.bon.Timer;
-import ej.kf.AlreadyLoadedFeatureException;
-import ej.kf.Feature;
-import ej.kf.Feature.State;
-import ej.kf.FeatureStateListener;
-import ej.kf.IncompatibleFeatureException;
-import ej.kf.InvalidFormatException;
-import ej.kf.Kernel;
-import ej.net.HttpPollerConnectivityManager;
-import ej.service.ServiceFactory;
-import ej.storage.Storage;
 
 /**
  * Main class for the kernel, any code executed in the Kernel is called from this class.
@@ -76,13 +57,14 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException, InvalidFormatException {
 
-		LOGGER.info("Kernel startup");
+		LOGGER.info("Kernel startup: " + Kernel.getInstance().getName() + " - v" + Kernel.getInstance().getVersion());
 
 		// Initialize security management policy
 		SecurityInit.initSecurityManager();
 
 		// Start MicroUI and show a black screen until an application requests the display
 		// Also register a FeatureStateListener to handle the display on feature stop
+		
 		GUIManager.initUI();
 
 		// Register official kernel converters, see the documentation:

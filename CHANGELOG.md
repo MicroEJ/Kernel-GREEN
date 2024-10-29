@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2024-10-29
+
+### Changed
+
+- Migrated the project to [SDK6](https://docs.microej.com/en/latest/SDK6UserGuide/index.html) using a Gradle-based build system. **Note:** This version is incompatible with SDK5 and Ivy; use previous versions if needed.
+- Update ``com.microej.library.wadapps#connectivity:2.0.0`` to ``com.microej.library.kf#connectivity:2.1.0``.
+
 ## [1.4.0] - 2024-08-07
 
 ### Changed
