@@ -5,150 +5,64 @@
 Kernel GREEN
 ============
 
-Welcome to the Kernel "GREEN", a MicroEJ Kernel Application project.
+Welcome to Kernel **GREEN**, a lightweight MicroEJ Kernel project designed to provide a turnkey solution with essential
+services for embedded development. It enables developers to quickly build and deploy sandboxed applications, using the
+full potential
+of [MicroEJ’s multi-sandboxing technology](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html).
 
-Its main goal is to provide a turnkey Kernel code example that offers basic services for developing a [Sandboxed Application](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedApplication.html) and deploying it easily on your Device.
-Additionally, this project serves as a starting point for Kernel developers to learn and demonstrate most of the Multi-Sandboxing capabilities of the MicroEJ technology.
+This project serves as both an adaptable starting point for creating embedded systems and a learning platform for
+understanding multi-sandboxing capabilities. By focusing on modularity and simplicity, Kernel GREEN empowers developers
+to build secure, efficient, and responsive applications suitable for a range of devices and embedded environments.
 
-Feel free to fork and adapt the Kernel to fit your specific needs.
+![MicroEJ Kernel Overview](./screenshots/MicroEJ_Kernel_Overview.png "MicroEJ Kernel Overview")
 
-**IMPORTANT**: Kernel development requires a fundamental comprehension of building VEE Ports and Standalone Applications using MICROEJ SDK.
-If you are not already familiar with MicroEJ Technology, you should start with the [MicroEJ Getting Started](https://docs.microej.com/en/latest/overview/gettingStarted.html) tutorials beforehand.
-With that done, you can confidently embark on your exciting journey into Kernel development with MicroEJ.
+**Key Features:**
 
-# Specification
+- **Modular Architecture**: Configures only essential components to optimize memory.
+- **App Sandboxing**: Creates secure, isolated environments for app protection.
+- **Inter-App Communication**: Enables secure app interactions
+  via [Shared Interfaces](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedAppSharedInterface.html).
+- **API Protection**: Secures critical APIs with SOAR (compile-time) and a Security Manager (runtime) for permissions.
+- **Health Monitoring**: Monitor critical system resources such as CPU, RAM.
+- **Portability**: Compatible with all MCU and MPU platforms supported by MicroEJ, tested on *NXP i.MX RT1170* and
+  *STM32F7508-DK*.
+- **Extensive Libraries**: Supports a broad range of libraries and protocols like HTTP/S, MQTT, CoAP, and LWM2M.
+- **MicroEJ GUI**: Offers a lightweight, powerful GUI stack for UI development.
 
-From a top-level perspective the Kernel provides the following services.
+## Requirements
 
-* **Network services**
+This Kernel must be built against a VEE Port.
+The VEE Port serves as the portability layer for MicroEJ VEE, enabling it to operate on the target device. It acts as an
+abstraction layer between the Kernel and the Board Support Package (BSP).
 
-  * [CommandServer](./src/main/java/com/microej/kernel/green/localdeploy/CommandServer.java)
-
-    Listens for lifecycle management commands on port `4000` and handles them.
-
-  * [NTPService](./src/main/java/com/microej/kernel/green/ntp/NTPService.java)
-
-    Synchronizes the system clock using the Network Time Protocol.
-
-* **Application services**
-
-  * **Kernel-local services** (services registered by the Kernel and only accessible from the Kernel context)
-
-    * [ConnectivityManager](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.NetworkCallback.html)
-
-      Allows for querying the state of network connectivity and getting notified of network connectivity changes.
-
-    * [Timer](https://repository.microej.com/javadoc/microej_5.x/apis/ej/bon/Timer.html)
-
-      Allows scheduling possibly repeating background tasks in an efficient way.
-
-  * **Shared services** (services registered by the Kernel and accessible from the Sandboxed Applications context)
-
-    * [Storage](./src/main/java/com/microej/kernel/green/storage/StorageKfFs.java)
-
-      Eases up data storage/retrieval to/from the persistent storage.
-
-In more detail the Kernel implements the following specification.
-
-- Sandboxed Applications Lifecycle
-
-  - Enables the deployment of Sandboxed Applications from the MICROEJ SDK to your device through a TCP/IP connection.
-    Features `.fo` files are also persisted.
-
-  - Automatically starts all previously deployed Sandboxed Applications during boot.
-
-  - Registers an instance of [ej.kf.FeatureStateListener](https://repository.microej.com/javadoc/microej_5.x/apis/ej/kf/FeatureStateListener.html) to log when the state of an Application changes.
-
-- Runtime
-
-  - Registers an instance of [ej.bon.Timer](https://repository.microej.com/javadoc/microej_5.x/apis/ej/bon/Timer.html) as a Kernel-local service allowing for scheduling time-based tasks without extra-thread creation.
-
-  - Enables communication between Sandboxed Applications using [Shared Interfaces](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedAppSharedInterface.html).
-
-    - Registers default [Kernel converters](https://docs.microej.com/en/latest/KernelDeveloperGuide/featuresCommunication.html?kernel-types-converter).
-
-    - Provides a Shared Registry for Sandboxed Applications to register and retrieve services declared as Shared Interfaces.
-
-- Networking
-
-  - Starts the [ServerSocket](https://repository.microej.com/javadoc/microej_5.x/apis/java/net/ServerSocket.html) and listens for Sandboxed Applications deployment commands.
-
-  - Registers an instance of [android.net.ConnectivityManager](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.html) as a Kernel-local service allowing for monitoring network connectivity.
-
-  - Registers an [android.net.ConnectivityManager.NetworkCallback](https://repository.microej.com/javadoc/microej_5.x/apis/android/net/ConnectivityManager.NetworkCallback.html) that logs all available network interfaces on network state change.
-
-  - Synchronizes the time of the device using NTP.
-
-- Persistency
-
-  - Registers an instance of [ej.storage.Storage](https://repository.microej.com/javadoc/microej_5.x/apis/ej/storage/Storage.html) as a shared service to provide Sandboxed Applications with a simple persistency mechanism.
-    The implementation is based on FS (File System) API. The Kernel and each Sandboxed Application have their own data space.
-
-- Graphical User Interface
-
-  - Starts the MicroUI Graphical Engine.
-
-  - Initializes the display with a [Black screen](./src/main/java/com/microej/kernel/green/gui/BlackScreenDisplayable.java). When a Sandboxed Application is uninstalled, the Kernel checks if itself or any other started application do own a [Displayable](https://repository.microej.com/javadoc/microej_5.x/apis/index.html?ej/microui/display/Displayable.html) object, if none is found, it will render the black screen.
-
-- Security Management
-
-  - Registers a logging-only [SecurityManager](https://repository.microej.com/javadoc/microej_5.x/apis/java/lang/SecurityManager.html) that grants any permission from any application and logs the event to the debug console.
-
-    Please refer to the [Security Management](#security-management) section for more information.
-
-# Set up the Kernel Project
-
-## Prerequisites
-
-### Environment
-
-- MICROEJ SDK `6.0.0` or higher (tested with [MICROEJ SDK 6](https://docs.microej.com/en/latest/SDK6UserGuide/install.html)).
-- A [MicroEJ Evaluation License](https://docs.microej.com/en/latest/SDK6UserGuide/licenses.html#evaluation-licenses).
-
-### VEE Port
-
-The Kernel can be built using any VEE Port that provides the following Foundation Libraries.
+This kernel can be built using any VEE Port that provides the following Foundation Libraries:
 
 | Foundation Library | Version |
-| ------------------ |---------|
+|--------------------|---------|
 | EDC                | 1.3     |
 | BON                | 1.4     |
-| KF                 | 1.7     |
+| Multi-Sandbox (KF) | 1.7     |
 | NET                | 1.1     |
 | SSL                | 2.2     |
+| SECURITY           | 1.7     |
 | MicroUI            | 3.1     |
 | Drawing            | 1.0     |
 | FS                 | 2.1     |
 
-**WARNING**: **The VEE Port must be built with [Multi-Sandbox](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html) capability.**
-Check out the [VEE Porting Guide](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html#installation) for more information about enabling Multi-Sandbox capacities.
+### Compatibility Matrix for Reference VEE Ports
 
-#### Reference VEE Ports
+The kernel has been tested with the following reference VEE Ports:
 
-The Kernel has been tested against the following reference VEE Ports:
-- [VEE Port for NXP i.MX RT1170 EVK v2.2.0 (default)](https://github.com/nxp-mcuxpresso/nxp-vee-imxrt1170-evk/tree/NXPVEE-MIMXRT1170-EVK-2.2.0)
-```
-mkdir nxpvee-mimxrt1170-prj
-cd nxpvee-mimxrt1170-prj
-west init -m https://github.com/nxp-mcuxpresso/nxp-vee-imxrt1170-evk .
-west update
-cd nxpvee-mimxrt1170-evk/
-git checkout NXPVEE-MIMXRT1170-EVK-2.2.0
-```
+**[NXP i.MX RT1170](https://github.com/nxp-mcuxpresso/nxp-vee-imxrt1170-evk)**
 
-**NOTE:** ``west`` is a tool provided by the NXP MCUXpresso SDK Developer necessary for the NXP i.MX RT1170 EVK board, more information about west [here](https://github.com/nxp-mcuxpresso/nxp-vee-imxrt1170-evk/tree/NXPVEE-MIMXRT1170-EVK-2.2.0?tab=readme-ov-file#mcuxpresso-installer-tool).
+| Kernel version | VEE Port version |
+|----------------|------------------|
+| 1.3.0          | 2.1.1            |
+| 1.4.0          | 2.1.1            |
+| 2.0.0          | 2.2.0            |
+| 2.1.0          | 3.0.0            |
 
-- [VEE Port for STMicroelectronics STM32F7508-DK Discovery Kit v2.3.0](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK/tree/2.3.0)
-```
-git clone --branch 2.3.0 https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK.git
-git submodule update --init --recursive
-```
-
-For further information about VEE Ports, please refer to their respective README.
-
-##### Reference VEE Ports version compatibility matrix
-
-###### STM32F7508-DK
+**[STM32F7508-DK](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK)**
 
 | Kernel version | VEE Port version |
 |----------------|------------------|
@@ -156,24 +70,204 @@ For further information about VEE Ports, please refer to their respective README
 | 1.4.0          | 2.0.0            |
 | 2.0.0          | 2.3.0            |
 
-###### NXP i.MX RT1170 EVK
+For further information about VEE Ports, please refer to their respective README.
 
-| Kernel version | VEE Port version |
-|----------------|------------------|
-| 1.3.0          | 2.1.1            |
-| 1.4.0          | 2.1.1            |
-| 2.0.0          | 2.2.0            |
+## Pre-built Binaries
+
+Pre-built binaries for this kernel are available for *NXP i.MX RT1170* and *STM32F7508-DK*, ideal for developers
+exploring application development on this kernel.
+
+To get started, follow the
+[Getting Started With Pre-built Kernel Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/gettingStarted.html).
+
+If you wish to extend the source code or compile for a different target
+board, [see the next section](#how-to-build-the-project-using-gradle).
+
+## How to Build the Project Using Gradle
+
+This project is built with Java and uses the Gradle build system for easy compilation and deployment.
+
+Follow these steps to build and run the kernel on MicroEJ Simulator, or flash it on a development board:
+
+1. [Accept MICROEJ SDK End-User License Agreement (EULA)](#accept-microej-sdk-end-user-license-agreement-eula)
+2. [Install Java JDK](#install-java)
+3. [Configure Gradle Module Repositories](#configure-gradle-module-repositories)
+4. [Request a MicroEJ Evaluation License](#request-microej-evaluation-license)
+5. [Install Toolchain and Flash Tools for your target Development Board](#install-toolchain-and-flash-tools-for-development-board)
+6. [Compile the Project](#compile-the-project)
+7. [Run](#run)
+
+### Accept MICROEJ SDK End-User License Agreement (EULA)
+
+The [MICROEJ SDK EULA](https://repository.microej.com/licenses/sdk/LAW-0011-LCS-MicroEJ_SDK-EULA-v3.1C.txt) must be
+accepted before compiling this project. You can accept the EULA by:
+
+- specifying the `-Daccept-microej-sdk-eula-v3-1c=YES` command line option,
+- or setting the system property `systemProp.accept-microej-sdk-eula-v3-1c=YES` in a `gradle.properties` file,
+- or setting the `ACCEPT_MICROEJ_SDK_EULA_V3_1C=YES` environment variable.
+
+### Install Java
+
+The SDK requires JDK 11 or a higher LTS version to be installed, with either:
+
+- The `JAVA_HOME` environment variable set to the JDK path,
+- Or the JDK's `java` executable accessible in the `PATH`.
+
+It can be downloaded from https://adoptium.net/
+
+### Configure Gradle Module Repositories
+
+- Create the directory `<user.home>/.gradle/init.d` if it doesn’t already exist.
+- Download and place the following file in the newly created folder.
+  [microej.init.gradle.kts](https://docs.microej.com/en/latest/_downloads/e172eabd5b1f579b3e5636e65eb0fcaa/microej.init.gradle.kts)
+  This file configures the necessary MicroEJ repositories to access required dependencies.
+
+### Request MicroEJ Evaluation License
+
+A MicroEJ Evaluation license is required to compile this project.
+
+To request an evaluation license, first obtain your device UID by running the following command:
+
+```bash
+gradlew buildExecutable
+```
+
+This command will display your device UID, which you'll need to request an evaluation license by following the steps in
+the [MicroEJ SDK User Guide](https://docs.microej.com/en/latest/SDK6UserGuide/licenses.html#request-your-activation-key).
+
+Once you have your UID, use it to complete the license request process as outlined in the guide.
+
+**Example Console Log Output:**
+
+```bash
+  [INFO ] Launching in Evaluation mode. Your UID is XXXXXXXXXXXXXXXX.
+  [ERROR] Invalid license check (No license found).
+  Java returned: -1
+```
+
+Once you receive your evaluation license zip archive, simply place it in the `~/.microej/licenses/` directory (create
+the directory if it doesn’t already exist).
+
+### Install Toolchain and Flash Tools for Development Board
+
+Download and configure the toolchain for your target board, and install the necessary flash tools to enable program
+flashing.
+
+<details>
+<summary><b>NXP i.MX RT1170</b></summary>
+
+Download [MCUXpressoInstaller](https://github.com/nxp-mcuxpresso/vscode-for-mcux/wiki/Dependency-Installation) and use
+it to install the following tools:
+
+- **MCUXpresso SDK Developer**: This will install "Arm GNU Toolchain" with required NXP libraries and header file.
+- **Link Server**: will be used to flash the board
+
+**Make** must also be installed.
+
+For Debian based distro use:
+
+````bash
+sudo apt install make
+````
+
+For Windows, consider installing it via [getgnuwin32](https://sourceforge.net/projects/getgnuwin32/), and add the
+installation path to your system PATH environment variable.
+
+````bash
+> make -v
+
+GNU Make 3.81
+Copyright (C) 2006  Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+
+This program built for i386-pc-mingw32
+````
+
+</details>
 
 
-## Import the Kernel project in an IDE
+<details>
+<summary><b>STM32F7508-DK Discovery Kit</b></summary>
 
-The MicroEJ SDK6 is not bound to a specific IDE, therefore you are free to use any of the supported IDE.
-MicroEJ documents the usage of SDK 6 on the following IDEs:
-* [Android Studio](https://developer.android.com/studio?hl=en)
-* [IntelliJ IDEA](https://www.jetbrains.com/idea/)
-* [Eclipse](https://eclipseide.org/)
+Install the STM toolchain & flash tools. **TO be completed.**
 
-To understand how to import a Kernel project the listed IDEs, please refer to the public documentation **[Import Project](https://docs.microej.com/en/latest/SDK6UserGuide/importProject.html)**.
+</details>
+
+### Compile the Project
+
+Run the following Gradle command to compile the project:
+
+   ```bash
+   gradlew build
+   ```
+
+This command will compile the Java project and link it with the VEE Port to produce the final flashable executable and
+it's associated virtual device.
+
+- Executable are located in `build/application/executable` directory.
+- Virtual Device is located in `build/virtualDevice` directory.
+
+### Run
+
+The sections below outline the Gradle commands for running the kernel. Select your target environment and follow the
+steps to run the kernel on either the simulator or the development board.
+
+<details>
+<summary><b>Run on Simulator</b></summary>
+
+Execute the following command to run the kernel using the simulator. This command will run the kernel on your PC.
+
+ ```bash
+   gradlew runOnSimulator
+   ```
+
+</details>
+
+<details>
+<summary><b>Run on Dev Board</b></summary>
+
+Execute the following Gradle command to flash the binary to your board.
+
+ ```bash
+   gradlew runOnDevice
+   ```
+
+</details>
+
+## Kernel Configuration
+
+The kernel provides a range of configurable services through the properties
+file: [kernel.properties.list](src/main/resources/kernel.properties.list).
+
+### Available Configurable Services:
+
+- **Logging**: Configure logging levels to control kernel output, including enabling, disabling, or fine-tuning the
+  verbosity.
+- **Security Manager**: Enable or disable the security manager and customize its implementation as per your
+  requirements.
+- **Connectivity Manager**: Manage network interface monitoring and internet connectivity checks, including enabling,
+  disabling, and configuration.
+- **Network Time Protocol (NTP)**: Set up NTP servers for accurate time synchronization.
+- **Health Monitoring**: Monitor CPU and RAM usage by enabling, disabling, and customizing the resource monitoring
+  features.
+- **Storage**: Define and configure the storage service implementation to be used by the kernel.
+
+Refer to the `kernel.properties.list` file for detailed configuration options for each service.
+
+## Importing the Kernel Project into an IDE
+
+The MicroEJ SDK 6 is flexible and not tied to any specific Integrated Development Environment (IDE), allowing you the
+freedom to choose from various supported IDEs. MicroEJ provides detailed documentation on using SDK 6 with the following
+IDEs:
+
+- [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+- [Android Studio](https://developer.android.com/studio?hl=en)
+- [Eclipse](https://eclipseide.org/)
+
+To learn how to import a Kernel project into these IDEs, please refer
+to  [Import Project](https://docs.microej.com/en/latest/SDK6UserGuide/importProject.html) documentation.
 
 ## Configure the VEE Port
 
@@ -186,9 +280,12 @@ The VEE Port can be configured in one of the following ways:
 
 ### Declaring the VEE Port as a Module Dependency
 
-This approach allows for fetching the VEE Port sources from a MicroEJ repository. By default, the MicroEJ SDK is configured to fetch VEE Ports from the [Developer Repository](https://docs.microej.com/en/latest/SDKUserGuide/repository.html#developer-repository).
+This approach allows for fetching the VEE Port sources from a MicroEJ repository. By default, the MicroEJ SDK is
+configured to fetch VEE Ports from
+the [Developer Repository](https://docs.microej.com/en/latest/SDKUserGuide/repository.html#developer-repository).
 
-In order to declare the VEE Port dependency: 
+In order to declare the VEE Port dependency:
+
 * Open the [build.gradle.kts](./build.gradle.kts) file.
 * Set the ``defaultVeePortGroup`` variable to your VEE Port group name.
 * Set the ``defaultVeePortModule`` variable to your VEE Port module name.
@@ -196,134 +293,210 @@ In order to declare the VEE Port dependency:
 
 You can also override the default variables by using specifying arguments in the Gradle commands.
 
-For instance, to ensure the VEE Port configuration, you can execute the ``loadVee`` gradle task such as:  
-``gradlew loadVee -Dveeport.group=yourVEEPortGroup -Dveeport.module=yourVEEPortModuleName -Dveeport.version=yourVEEPortVersion``
+For instance, to ensure the VEE Port configuration, you can execute the ``loadVee`` Gradle task such as:
 
+```bash
+gradlew loadVee -Dveeport.group=yourVEEPortGroup -Dveeport.module=yourVEEPortModuleName -Dveeport.version=yourVEEPortVersion
+```
 
 If the VEE Port has been correctly configured, the output result should be:
-```
+
+```bash
 BUILD SUCCESSFUL in 12s
 1 actionable task: 1 up-to-date
 ```
 
-**REMINDER**: **The VEE Port must be built with [Multi-Sandbox](https://docs.microej.com/en/latest/VEEPortingGuide/multiSandbox.html) capability.**
-
-
 ### Specifying the VEE Port source directory
 
-This approach allows for building the Kernel against a VEE Port which sources are fetched locally. _Kernel GREEN_ is indeed not bound to a specific VEE Port and can be built against any other VEE Port as long as the [VEE Port requirements](#vee-port) are met.
+This approach allows for building the Kernel against a VEE Port which sources are fetched locally.
 
-Sources for the reference VEE Ports are [available on GitHub](#reference-vee-ports).
+_Kernel GREEN_ is indeed not bound to a specific VEE Port and can be built against any other VEE Port as long as
+the [VEE Port requirements](#supported-vee-port) are met.
+
+Sources for the reference VEE Ports are [available on GitHub](#supported-vee-port).
 
 In order to set a local VEE Port path:
+
 * Open the [build.gradle.kts](./build.gradle.kts) file.
 * Set the ``defaultLocalVEEPortPath`` variable to your local VEE Port source folder.
 
 You can also override the default variable by using specifying arguments in the Gradle commands.
 
-For instance, to ensure the VEE Port configuration, you can execute the ``loadVee`` gradle task such as:  
-``gradlew loadVee -Dlocal.veeport.path=C:\path\to\local\veeport\source``
+For instance, to ensure the VEE Port configuration, you can execute the ``loadVee`` Gradle task such as:
 
-**NOTE:** If the variable ``defaultLocalVEEPortPath`` is not empty, the ``build.gradle.kts`` file will use the specified local VEE Port path. Otherwise, it will use the module dependency way to fetch the VEE Port.
+```bash
+gradlew loadVee -Dlocal.veeport.path=C:\path\to\local\veeport\source
+```
 
-## Set up the VEE Port build environment
+**NOTE:** If the variable ``defaultLocalVEEPortPath`` is not empty, the ``build.gradle.kts`` file will use the specified
+local VEE Port path. Otherwise, it will use the module dependency way to fetch the VEE Port.
 
-Before going any further with the build the VEE Port must be set up with toolchain-specific environment variables and BSP Connection options.
+## Health Monitoring
 
-Please refer to the VEE Port specific documentation for more details. As for the [reference VEE Ports](#reference-vee-ports), please refer to the project _README_ file.
+The Health Monitoring Service enables periodic monitoring of RAM and CPU usage for the kernel and running applications.
 
-Also, please remember that a valid MicroEJ License is required for building. Please refer to [this section from the MicroEJ SDK User Guide](https://docs.microej.com/en/latest/SDKUserGuide/licenses.html#evaluation-licenses) to get help on obtaining and installing a MicroEJ Evaluation License.
+It can be enabled and configured using the following system properties in
+the [kernel.properties.list](src/main/resources/kernel.properties.list) file.
 
-# Build the Kernel
+````properties
+health.check.enabled=true
+# Polling interval in milliseconds for monitoring resource consumption.
+health.check.interval.ms=10000
+# If true, runs Garbage Collector before collecting RAM usage for refined monitoring.
+# Not recommended for production.
+health.check.gc.force=false
+# This value represents the mapping of CPU load to the MicroEJ execution counter per one second.
+# It is generated during a calibration phase on the target device.
+health.check.cpu.calibration=590000
+````
 
-Once the VEE Port is configured, you are ready to build the Kernel.
-To build the Kernel, execute the ``buildExecutable`` Gradle task using either the GUI from your Idea or by using the CLI:
-``gradlew buildExecutable``
+### CPU Monitoring Overview
 
-The build then start and can take few minutes.
+The MicroEJ VEE provides a detailed monitoring mechanism for CPU usage by tracking execution counters for each module,
+including the kernel and applications.
 
-At the end of the build, you should see the following:  
-``
-BUILD SUCCESSFUL in 41s
-8 actionable tasks: 4 executed, 4 up-to-date
-``
+#### Key Points:
 
-The output of the build is located in the `build/application/executable` directory should contain the build output:
-* `application.out`: the executable file to be programmed on the device.
+1. **Execution Units**:
 
+- The CPU usage is measured in execution units.
+- Each execution unit corresponds to a single instruction executed by the MicroEJ VEE.
 
-# Deploy an application
+2. **Calibration for 100% Utilization**:
+
+- Calibration determines the maximum execution counter value representing approximate 100% CPU usage.
+- This process involves running dedicated calibration code that pushes the CPU to its maximum capacity.
+
+3. **Calibration Procedure**:
+
+- During calibration, the MicroEJ VEE must be the only active task on the board to ensure accurate results.
+- The calibration process requires running specific code provided in the project.
+
+4. **Calibration Code Example**:
+
+- The calibration code is available
+  in [CpuCalibration.java](src/main/java/com/microej/kernel/green/monitoring/CpuCalibration.java).
+- To use this code:
+  - Update the `applicationEntryPoint` in [build.gradle.kts](build.gradle.kts) to
+    `com.microej.kernel.green.monitoring.CpuCalibration`.
+  - Deploy and run the calibration code on your device.
+
+By following these steps, the system can accurately measure CPU usage and provide reliable monitoring capabilities.
+
+## Deploy an application
 
 Once the Kernel is built, Sandboxed Applications can then be dynamically deployed on the Kernel.
 
-For more information about Sandboxed Applications, please refer to the [official documentation](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedApplication.html)
+For more information about Sandboxed Applications, please refer to
+the [official documentation](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedApplication.html)
 
-To deploy an application on the Kernel, paste the following code in the ``build.gradle.kts`` file of the application:
+To deploy an application on the Kernel, paste the following code in the ``build.gradle.kts`` file of the application.
+Make sure to paste the ``import`` lines at the beginning of your ``build.gradle.kts`` file.
 
-```
-import com.microej.gradle.tasks.ExecToolTask
-import com.microej.gradle.tasks.LoadKernelExecutableTask
-import com.microej.gradle.tasks.LoadVeeTask
+This code will register a new Gradle task named ``localDeploy`` in the ``microej`` group for the Sandboxed application
+that can be run like any other Gradle task.
 
-val loadVee = tasks.withType(LoadVeeTask::class).named("loadVee")
-val loadKernelExecutableTask = tasks.withType(LoadKernelExecutableTask::class).named("loadKernelExecutable")
+**Note:** in the bellow code, make sure to update ``boardIP``, ``boardPort`` variable to use your board IP address and port.
 
-tasks.register<ExecToolTask>("localDeploy") {
+```kotlin
+import com.microej.gradle.tasks.BuildFeatureTask
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.util.*
 
-    group="microej"
-    
-    veeDir.set(loadVee.get().loadedVeeDir)
-    resourcesDirectories.from(project.extensions.getByType(SourceSetContainer::class)
-            .getByName(SourceSet.MAIN_SOURCE_SET_NAME).output.resourcesDir,
-            project.layout.buildDirectory.dir("generated/microej-app-wrapper/resources"))
-    classesDirectories.from(project.extensions.getByType(SourceSetContainer::class)
-            .getByName(SourceSet.MAIN_SOURCE_SET_NAME).output.classesDirs)
+val buildFeatureTask = tasks.withType(BuildFeatureTask::class).named("buildFeature")
+tasks.register("localDeploy") {
+  dependsOn("buildFeature")
+  group = "microej"
 
-    classpathFromConfiguration.from(project.getConfigurations().getByName("runtimeClasspath"))
+  // Adjust the following variables to your needs
+  val boardIP = "<Board IP Address>" // board ip address
+  val boardPort = 4001 // AppConnect port
+  val force = true // overwrote existing app with same name
+  val start = false // start app after install
+  // Note: if your metadata (feature.kf) is part of '/src/main/resources', modify this path accordingly
+  val featureKFFilePath = "generated/microej-app-wrapper/feature-resources/feature.kf"
 
-    // These inputs concern the localDeploymentSocket tool only
-    toolName = "localDeploymentSocket"
-    inputs.file(loadKernelExecutableTask.get().loadedKernelExecutableFile)
-    toolProperties.putAll(mapOf(
-            "application.main.class" to microej.applicationEntryPoint,
-            "board.server.host" to "x.x.x.x",
-            "board.server.port" to "4000",
-            "board.timeout" to "120000",
-            "use.storage" to "true"
-    ))
-    doFirst {
-        toolProperties["kernel.filename"] = loadKernelExecutableTask.get().loadedKernelExecutableFile.get().asFile.absolutePath
+  doLast {
+    val applicationFOFile = buildFeatureTask.get().featureFile.get().asFile
+    val properties = Properties()
+    project.layout.buildDirectory.file(featureKFFilePath).get().asFile.inputStream().use(properties::load)
+    val appName = properties.getProperty("name") ?: error("App name not found in $featureKFFilePath")
+    val appVersion = properties.getProperty("version") ?: error("App version not found in $featureKFFilePath")
+
+    println("Deploying app $appName $appVersion to board at $boardIP:$boardPort")
+    val url = "http://$boardIP:$boardPort/api/app/install?force=$force&start=$start&name=$appName"
+    val client = OkHttpClient()
+    val multipartBody = MultipartBody.Builder().setType(MultipartBody.FORM) //
+      .addFormDataPart(
+        "binary",
+        applicationFOFile.name,
+        applicationFOFile.asRequestBody("application/octet-stream".toMediaType())
+      )//
+      .build()
+    val request = Request.Builder().url(url).post(multipartBody).build()
+    client.newCall(request).execute().use { response ->
+      if (response.isSuccessful) {
+        println("Deployment Successful! Response Code: ${response.code}")
+        println("App info: ${response.body?.string()}")
+      } else {
+        System.err.println("Deployment Failed. Response Code: ${response.code}")
+        System.err.println("Cause: ${response.body?.string()}")
+      }
     }
+  }
+}
+
+buildscript {
+  repositories {
+    maven {
+      name = "mavenCentral"
+      url = uri("https://repo.maven.apache.org/maven2/")
+    }
+  }
+  dependencies {
+    classpath("com.squareup.okhttp3:okhttp:4.12.0")
+  }
 }
 ```
 
-This code will register a new Gradle task named ``localDeploy`` in the ``microej`` group for the Sandboxed application that can be run like any other Gradle task.
-
-**Note:** in the above code, make sure to update ``application.main.class``, ``board.server.host``, ``board.server.port``,``board.timeout``, ``use.storage`` properties according to your needs.
-
-
-# Going further
+## Going further
 
 By now, you should have completed the initial functional Kernel.
-Before proceeding with any customization, please consult the [Kernel Developer Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/index.html).
+Before proceeding with any customization, please consult
+the [Kernel Developer Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/index.html).
 
 If you wish to understand the core Multi-Sandboxing mechanisms, you can refer to the following resources:
 
-- The [Kernel & Features specification](https://docs.microej.com/en/latest/KernelDeveloperGuide/kf.html) which provides a detailed explanation of core concepts.
-- The [ej.kf.Kernel class](https://repository.microej.com/javadoc/microej_5.x/apis/ej/kf/Kernel.html) which offers the complete Javadoc API.
+- The [Kernel & Features specification](https://docs.microej.com/en/latest/KernelDeveloperGuide/kf.html) which provides
+  a detailed explanation of core concepts.
+- The [ej.kf.Kernel class](https://repository.microej.com/javadoc/microej_5.x/apis/ej/kf/Kernel.html) which offers the
+  complete Javadoc API.
 
 The following sections deal with specific topics you may want to experiment with.
 
-## Security management
+### Security management
 
-_Note: please refer to [this section](https://docs.microej.com/en/latest/KernelDeveloperGuide/kernelCreation.html#implement-a-security-policy) from the [Kernel Developer Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/index.html) to get a primer on security management._
+_Note: please refer
+to [this section](https://docs.microej.com/en/latest/KernelDeveloperGuide/kernelCreation.html#implement-a-security-policy)
+from the [Kernel Developer Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/index.html) to get a primer on
+security management._
 
 _Kernel GREEN_ provides two ready-to-use implementations:
-* (default) a logging-only policy using [KernelSecurityManager](https://repository.microej.com/javadoc/microej_5.x/apis/com/microej/kf/util/security/KernelSecurityManager.html) in order to demonstrate how the Kernel may restrict sensitive or possibly unsafe operations performed by applications.
-* an actual security policy based on resource file from applications using [KernelSecurityPolicyManager](https://repository.microej.com/javadoc/microej_5.x/apis/com/microej/kf/util/security/KernelSecurityPolicyManager.html) that allows application to describe permissions they will need at runtime.
 
+* (default) a logging-only policy
+  using [KernelSecurityManager](https://repository.microej.com/javadoc/microej_5.x/apis/com/microej/kf/util/security/KernelSecurityManager.html)
+  in order to demonstrate how the Kernel may restrict sensitive or possibly unsafe operations performed by applications.
+* an actual security policy based on resource file from applications
+  using [KernelSecurityPolicyManager](https://repository.microej.com/javadoc/microej_5.x/apis/com/microej/kf/util/security/KernelSecurityPolicyManager.html)
+  that allows application to describe permissions they will need at runtime.
 
-These operations cover all operations restricted by one of the supported [Permission](https://repository.microej.com/javadoc/microej_5.x/apis/java/security/Permission.html)s which are, in this Kernel:
+These operations cover all operations restricted by one of the
+supported [Permission](https://repository.microej.com/javadoc/microej_5.x/apis/java/security/Permission.html)s which
+are, in this Kernel:
 
 * [DisplayPermission](https://repository.microej.com/javadoc/microej_5.x/apis/ej/microui/display/DisplayPermission.html)
 * [EventPermission](https://repository.microej.com/javadoc/microej_5.x/apis/ej/microui/event/EventPermission.html)
@@ -339,18 +512,27 @@ These operations cover all operations restricted by one of the supported [Permis
 * [SocketPermission](https://repository.microej.com/javadoc/microej_5.x/apis/java/net/SocketPermission.html)
 * [SSLPermission](https://repository.microej.com/javadoc/microej_5.x/apis/javax/net/ssl/SSLPermission.html)
 
+To switch between the two ready-to-use implementations listed above, you can edit
+the [security.properties.list](src/main/resources/kernel.properties.list) file by updating the
+``security.manager.mode`` property value to the following values:
 
-To switch between the two ready-to-use implementations listed above, you can edit the [security.properties.list](src/main/resources/security.properties.list) file by updating the ``security.manager.mode`` property value to the following values:
-* ``LOGGING`` (default): uses the logging only security management policy to show any protected access by any application at runtime.
-* ``POLICY_FILE``: uses the resource file based system to allow each application to describe permissions it will need at runtime.
+* ``LOGGING`` (default): uses the logging only security management policy to show any protected access by any
+  application at runtime.
+* ``POLICY_FILE``: uses the resource file based system to allow each application to describe permissions it will need at
+  runtime.
 
-A more complete explanation of these implementations is available on the [MicroEJ Developer Website](https://docs.microej.com/en/latest/KernelDeveloperGuide/applicationSecurityPolicy.html) in the  ``Application security policy`` section.
+A more complete explanation of these implementations is available on
+the [MicroEJ Developer Website](https://docs.microej.com/en/latest/KernelDeveloperGuide/applicationSecurityPolicy.html)
+in the  ``Application security policy`` section.
 
-# Troubleshooting
+## Troubleshooting
 
-## The local specified VEE Port path is not correctly set
+### The local specified VEE Port path is not correctly set
 
-```
+This error is caused when the path specified for a local VEE Port in the ``build.gradle.kts`` file is not pointing to a
+valid VEE Port folder.
+
+```bash
 FAILURE: Build failed with an exception.
 
 * What went wrong:
@@ -359,8 +541,6 @@ FAILURE: Build failed with an exception.
 The given file Path/to/specified/VEEPort/path is not a VEE archive.
 ```
 
-This error is caused when the path specified for a local VEE Port in the ``build.gradle.kts`` file is not pointing to a valid VEE Port folder.
-
 ---
-_Copyright 2021-2024 MicroEJ Corp. All rights reserved._  
+_Copyright 2021-2025 MicroEJ Corp. All rights reserved._  
 _Use of this source code is governed by a BSD-style license that can be found with this software._

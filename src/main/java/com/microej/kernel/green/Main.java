@@ -6,264 +6,114 @@
  */
 package com.microej.kernel.green;
 
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkInfo;
-import android.net.NetworkRequest;
-import com.microej.kernel.green.gui.GUIManager;
-import com.microej.kernel.green.localdeploy.CommandServer;
-import com.microej.kernel.green.ntp.NTPService;
-import com.microej.kernel.green.security.SecurityInit;
-import com.microej.kernel.green.storage.StorageKfFs;
-import com.microej.kf.connectivity.ConnectivityManagerKF;
-import com.microej.kf.util.*;
-import com.microej.kf.util.service.ServiceRegistryKF;
-import ej.bon.Timer;
-import ej.kf.*;
-import ej.kf.Feature.State;
-import ej.net.HttpPollerConnectivityManager;
-import ej.service.ServiceFactory;
-import ej.storage.Storage;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.microej.kernel.green.gui.BlackScreenDisplayable;
+import com.microej.kernel.green.monitoring.HealthLoggerTimerTask;
+import com.microej.kernel.green.monitoring.HealthServiceImpl;
+import com.microej.kernel.green.net.OnInternetStateChanged;
+import com.microej.kernel.green.net.OnNetworkStateChanged;
+import com.microej.kernel.green.security.SecurityManagerProvider;
+import com.microej.kf.connectivity.ConnectivityManagerKF;
+import com.microej.kf.util.BooleanConverter;
+import com.microej.kf.util.ByteConverter;
+import com.microej.kf.util.CharacterConverter;
+import com.microej.kf.util.DateConverter;
+import com.microej.kf.util.DoubleConverter;
+import com.microej.kf.util.FloatConverter;
+import com.microej.kf.util.IProgressMonitorConverter;
+import com.microej.kf.util.InputStreamConverter;
+import com.microej.kf.util.IntegerConverter;
+import com.microej.kf.util.ListConverter;
+import com.microej.kf.util.LongConverter;
+import com.microej.kf.util.MapConverter;
+import com.microej.kf.util.RunnableWithResult;
+import com.microej.kf.util.ShortConverter;
+import com.microej.kf.util.StringConverter;
+import com.microej.kf.util.service.ServiceRegistryKF;
+import com.microej.library.appconnect.http.AppConnectServer;
+
+import android.net.ConnectivityManager;
+import android.net.NetworkRequest;
+import ej.annotation.Nullable;
+import ej.bon.Timer;
+import ej.kf.AlreadyLoadedFeatureException;
+import ej.kf.Feature;
+import ej.kf.Feature.State;
+import ej.kf.FeatureStateListener;
+import ej.kf.IncompatibleFeatureException;
+import ej.kf.InvalidFormatException;
+import ej.kf.Kernel;
+import ej.microui.MicroUI;
+import ej.microui.display.Display;
+import ej.net.HttpPollerConnectivityManager;
+import ej.net.util.connectivity.SimpleNetworkCallbackAdapter;
+import ej.service.ServiceFactory;
+import ej.storage.Storage;
+
 /**
- * Main class for the kernel, any code executed in the Kernel is called from this class.
+ * Kernel Entry Point Class
  */
 public class Main {
 
-	/** The Constant LOGGER for any log in the Kernel. */
-	public static final Logger LOGGER = Logger.getLogger("KERNEL");
+	private static final Logger LOGGER = Logger.getLogger("Main");
+	private static final String SECURITY_MANAGER_ENABLED_PROPERTY = "security.manager.enabled";
+	private static final String SECURITY_MANAGER_MODE_PROPERTY = "security.manager.mode";
+	private static final String APP_STORAGE_PREFIX = "app_";
+	private static final String APP_STORAGE_SUFFIX = ".fo";
 
 	/**
-	 * Simple main.
+	 * Kernel Entry Point
 	 *
 	 * @param args
 	 *            command line arguments
-	 * @throws IOException
-	 *             in case of an IO error
-	 * @throws InvalidFormatException
-	 *             in case a @link ej.kf.Feature stored on the storage has an invalid content
-	 *
 	 */
-	public static void main(String[] args) throws IOException, InvalidFormatException {
+	public static void main(String[] args) {
+		Thread.setDefaultUncaughtExceptionHandler(new KernelUncaughtExceptionHandler());
+		initializeKernel();
+		setupGui();
+		setupSecurityManager();
+		setupTimerService();
+		setupConnectivityManagerService();
+		registerNetworkStateCallback();
+		registerInternetConnectivityCallback();
+		installApplications();
+		startApplications();
 
-		LOGGER.info("Kernel startup: " + Kernel.getInstance().getName() + " - v" + Kernel.getInstance().getVersion());
-
-		// Initialize security management policy
-		SecurityInit.initSecurityManager();
-
-		// Start MicroUI and show a black screen until an application requests the display
-		// Also register a FeatureStateListener to handle the display on feature stop
-		
-		GUIManager.initUI();
-
-		// Register official kernel converters, see the documentation:
-		// https://docs.microej.com/en/latest/KernelDeveloperGuide/featuresCommunication.html?highlight=converter#kernel-types-converter
-		// for more information
-		registerConverters();
-
-		// Instantiate classes that will be used as services for features and kernel code
-		Storage storage = new StorageKfFs();
-		Timer timer = new Timer();
-		ConnectivityManager connectivityManager = new ConnectivityManagerKF(new HttpPollerConnectivityManager(timer));
-
-		LOGGER.info("Registering mandatory services");
-		// register required services.
-
-		// use generic service factory that register service in local
-		ServiceFactory.register(Timer.class, timer);
-
-		// use kf implementation for kernel to allow to specify the registry context
-		final ServiceRegistryKF serviceRegistryKF = (ServiceRegistryKF) ServiceFactory.getServiceRegistry();
-
-		// store in local context
-		serviceRegistryKF.register(ConnectivityManager.class, connectivityManager, true);
-
-		// store in shared context
-		serviceRegistryKF.register(Storage.class, storage, false);
-
-		// register a network connectivity callback that logs available network interfaces
-		registerLogConnectivity();
-
-		LOGGER.info("Registering featureStateListener");
-		// Create a new FeatureStateListener to trigger actions on feature state changes
-		Kernel.addFeatureStateListener(new FeatureStateListener() {
-
-			@Override
-			public void stateChanged(Feature feature, State previousState) {
-
-				// Log any feature state change
-				StringBuilder sbLogMsg = new StringBuilder();
-				State currentState = feature.getState();
-				if (previousState != null) {
-
-					sbLogMsg.append("State update: ").append(feature.getName()).append(" (v")
-							.append(feature.getVersion()).append(") has changed from state ")
-							.append(previousState.name()).append(" to ").append(currentState);
-
-				} else {
-					sbLogMsg.append("State update: ").append(feature.getName()).append(" (v")
-							.append(feature.getVersion()).append(") has changed from state UNKNOWN to ")
-							.append(currentState);
-				}
-
-				LOGGER.info(sbLogMsg.toString());
-			}
-		});
-
-		LOGGER.info("Loading and installing features from the storage (FS)");
-		// Load and install all features from the storage
-		for (String token : listApplications(storage.getIds())) {
-			try (InputStream stream = storage.load(token)) {
-
-				Kernel.install(stream);
-
-			} catch (IncompatibleFeatureException | AlreadyLoadedFeatureException e) {
-				// Remove feature from the storage if its not compatible with the kernel
-				LOGGER.severe(
-						"A feature has been removed from the storage because it was not compatible with the kernel or already loaded ");
-				storage.remove(token);
-			}
-		}
-
-		LOGGER.info("Starting NTP and CommandServer");
-		// Start the CommandServer and the NTP services
-		new NTPService().start();
-		new CommandServer().startServer();
-
-		// Start all features loaded in the kernel
-		for (Feature feature : Kernel.getAllLoadedFeatures()) {
-			feature.start();
-		}
-	}
-
-	private static void registerLogConnectivity() {
-		NetworkRequest request = new NetworkRequest.Builder().build();
-		ConnectivityManager connectivityManager = ServiceFactory.getService(ConnectivityManager.class);
-
-		connectivityManager.registerNetworkCallback(request, new ConnectivityManager.NetworkCallback() {
-			@Override
-			public void onAvailable(Network network) {
-				logNetworkInterfaces();
-			}
-
-			@Override
-			public void onLost(Network network) {
-				logNetworkInterfaces();
-			}
-		});
-		NetworkInfo info = connectivityManager.getActiveNetworkInfo();
-		if (info.isConnected()) {
-			logNetworkInterfaces();
-		}
-	}
-
-	private static String[] listApplications(String[] ids) {
-		// gets all the known storage ids
-		// filter the list by only keeping app tokens.
-		List<String> appStorages = new ArrayList<>();
-		for (String id : ids) {
-			if (id.startsWith("app_")) {
-				appStorages.add(id);
-			}
-		}
-		return appStorages.toArray(new String[appStorages.size()]);
+		startAppConnect();
+		startHealthMonitoring();
 	}
 
 	/**
-	 * Log the list of registered {@link NetworkInterface}.
+	 * Initialize The Kernel Instance
 	 */
-	private static void logNetworkInterfaces() {
-		LOGGER.info("Available Network interfaces:");
-		boolean noInterface = true;
-		Enumeration<NetworkInterface> interfaces = null;
-		try {
-			interfaces = NetworkInterface.getNetworkInterfaces();
-		} catch (SocketException e) {
-			if (Main.LOGGER.isLoggable(Level.FINEST)) {
-				Main.LOGGER.log(Level.FINEST, e.getMessage(), e); // NOSONAR log if log level is finest or above
-			}
-			return;
+	private static void initializeKernel() {
+		final Kernel kernel = Kernel.getInstance();
+		if (LOGGER.isLoggable(Level.INFO)) {
+			LOGGER.info("Starting Kernel " + kernel.getName() + " - " + kernel.getVersion());
 		}
 
-		// No interfaces found
-		if (interfaces == null) {
-			return;
+		// -----------------------
+		// Actions on Apps State Changes
+		// Register a listener to monitor application state changes: Start, Stop, Install, Uninstall
+		// -----------------------
+		if (LOGGER.isLoggable(Level.INFO)) {
+			LOGGER.info("Registering Application State Change Listener");
 		}
+		Kernel.addFeatureStateListener(new OnAppStateChanged());
 
-		while (interfaces.hasMoreElements()) {
-
-			NetworkInterface iface = interfaces.nextElement();
-
-			// Log IP valid addresses from the interface and return true if valid addresses are available
-			boolean hasValidIPAdresses = logInterface(iface);
-
-			if (!hasValidIPAdresses) {
-				noInterface = hasValidIPAdresses;
-			}
+		// -----------------------
+		// Shared Interface Converters
+		// ------------------------
+		if (LOGGER.isLoggable(Level.INFO)) {
+			LOGGER.info("Registering Shared Interface Converters");
 		}
-
-		if (noInterface) {
-			LOGGER.info("(none)");
-		}
-	}
-
-	/**
-	 * Log interface.
-	 *
-	 * @param iface
-	 *            the network interface
-	 * @return true if no valid interface is found, false otherwise
-	 */
-	private static boolean logInterface(NetworkInterface iface) {
-		boolean interfaceIsValid = true;
-
-		// filters out 127.0.0.1 and inactive interfaces
-		try {
-			if (!iface.isUp() || iface.isLoopback()) {
-				interfaceIsValid = false;
-			}
-		} catch (SocketException e) {
-			if (Main.LOGGER.isLoggable(Level.FINEST)) {
-				Main.LOGGER.log(Level.FINEST, e.getMessage(), e); // NOSONAR log if log level is finest or above
-			}
-			interfaceIsValid = false;
-		}
-
-		// If the interface is not valid, continue looping
-		if (!interfaceIsValid) {
-			return true;
-		}
-
-		Enumeration<InetAddress> addresses = iface.getInetAddresses();
-		while (addresses.hasMoreElements()) {
-			InetAddress addr = addresses.nextElement();
-			LOGGER.info("- " + addr.getHostAddress());
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Register Kernel converters.
-	 * <p>
-	 * If overriding this method, sub-classes MUST this implementation.
-	 *
-	 * @see Kernel#addConverter(ej.kf.Converter)
-	 */
-	protected static void registerConverters() {
-
+		// Register kernel converters for Shared Interface communication between apps,
+		// for more information, see the documentation:
+		// https://docs.microej.com/en/latest/KernelDeveloperGuide/featuresCommunication.html#kernel-types-converter
 		Kernel.addConverter(new BooleanConverter());
 		Kernel.addConverter(new ByteConverter());
 		Kernel.addConverter(new CharacterConverter());
@@ -278,6 +128,320 @@ public class Main {
 		Kernel.addConverter(new ListConverter<>());
 		Kernel.addConverter(new MapConverter<>());
 		Kernel.addConverter(new IProgressMonitorConverter());
+	}
 
+	/**
+	 * GUI
+	 * <p>
+	 * Initializes MicroUI and displays a black screen until an application requests display access.
+	 */
+	private static void setupGui() {
+		if (LOGGER.isLoggable(Level.INFO)) {
+			LOGGER.info("Starting MicroUI (MicroEJ EMBEDDED GUI Framework)");
+		}
+		MicroUI.start();
+		Display.getDisplay().requestShow(new BlackScreenDisplayable());
+	}
+
+	private static void setupSecurityManager() {
+		if (Boolean.getBoolean(SECURITY_MANAGER_ENABLED_PROPERTY)) {
+			String securityManagerMode = System.getProperty(SECURITY_MANAGER_MODE_PROPERTY);
+
+			if (LOGGER.isLoggable(Level.INFO)) {
+				LOGGER.info("Security Manager is enabled in mode " + securityManagerMode);
+			}
+
+			// Instantiate and set the SecurityManager based on the specified mode
+			SecurityManager securityManager = SecurityManagerProvider.get(securityManagerMode);
+			System.setSecurityManager(securityManager); // NOSONAR: Setting the system security manager is intentional.
+		}
+	}
+
+	private static void setupTimerService() {
+		if (LOGGER.isLoggable(Level.INFO)) {
+			LOGGER.info("Setup Timer Internal Service");
+		}
+
+		// Timer Service
+		// for scheduling periodic tasks across the system.
+		// This timer is intended for system-wide use, and its cancellation is prohibited.
+		// Attempting to cancel this timer will throw an UnsupportedOperationException.
+		final Timer timer = new Timer() {
+			@Override
+			public void cancel() {
+				throw new UnsupportedOperationException("This Kernel timer can't be canceled");
+			}
+		};
+
+		// Register the Timer service with the registry
+		// This service is internal to the Kernel and inaccessible to applications
+		final ServiceRegistryKF serviceRegistry = (ServiceRegistryKF) ServiceFactory.getServiceRegistry();
+		serviceRegistry.register(Timer.class, timer, true);
+	}
+
+	private static void setupConnectivityManagerService() {
+		if (LOGGER.isLoggable(Level.INFO)) {
+			LOGGER.info("Setup Connectivity Manager Service");
+		}
+
+		final Timer timer = ServiceFactory.getRequiredService(Timer.class);
+
+		// ConnectivityManager Service
+		// Set up a poller to regularly check for internet connectivity
+		// Initialize ConnectivityManager with HTTP polling to monitor internet access
+		// Register a network callback to handle changes in network status
+		final HttpPollerConnectivityManager httpPollerConnectivityManager = new HttpPollerConnectivityManager(timer);
+		final ConnectivityManager connectivityManager = new ConnectivityManagerKF(httpPollerConnectivityManager);
+
+		// Register the ConnectivityManager service with the registry
+		// This service is accessible to applications, allowing them to monitor network state changes
+		final ServiceRegistryKF serviceRegistry = (ServiceRegistryKF) ServiceFactory.getServiceRegistry();
+		serviceRegistry.register(ConnectivityManager.class, connectivityManager, false);
+	}
+
+	/**
+	 * Registers a callback to be invoked when the state of a network interface changes.
+	 * <p>
+	 * The callback will handle events such as the network interface going UP or DOWN.
+	 *
+	 * @see OnNetworkStateChanged
+	 */
+	private static void registerNetworkStateCallback() {
+		ConnectivityManager connectivityManager = ServiceFactory.getRequiredService(ConnectivityManager.class);
+		connectivityManager.registerNetworkCallback(new NetworkRequest.Builder().build(), new OnNetworkStateChanged());
+	}
+
+	/**
+	 * Registers a callback to monitor changes in Internet connectivity.
+	 * <p>
+	 * The callback handles events such as gaining or losing access to the Internet.
+	 *
+	 * @see OnInternetStateChanged
+	 */
+	private static void registerInternetConnectivityCallback() {
+		Timer timer = ServiceFactory.getRequiredService(Timer.class);
+		ConnectivityManager connectivityManager = ServiceFactory.getRequiredService(ConnectivityManager.class);
+		connectivityManager.registerNetworkCallback(new NetworkRequest.Builder().build(),
+				new SimpleNetworkCallbackAdapter(new OnInternetStateChanged(timer)));
+	}
+
+	/**
+	 * Example of application installation from storage.
+	 * <p>
+	 * Installs all applications from the root kernel storage. Application files must start with APP_STORAGE_PREFIX and
+	 * end with APP_STORAGE_SUFFIX.
+	 */
+	private static void installApplications() {
+		if (LOGGER.isLoggable(Level.FINE)) {
+			LOGGER.fine("Install application from storage");
+		}
+
+		Storage storage = ServiceFactory.getRequiredService(Storage.class);
+
+		try {
+			for (String file : storage.getIds()) {
+				// Check if the file is an application based on its naming convention
+				if (file.startsWith(APP_STORAGE_PREFIX) && file.endsWith(APP_STORAGE_SUFFIX)) {
+					installApp(file, storage);
+				}
+			}
+		} catch (IOException e) {
+			if (LOGGER.isLoggable(Level.SEVERE)) {
+				LOGGER.log(Level.SEVERE, "IO error while listing storage files", e);
+			}
+		}
+	}
+
+	private static void installApp(String file, Storage storage) throws IOException {
+		try (InputStream inputStream = storage.load(file)) {
+			Kernel.install(inputStream);
+			if (LOGGER.isLoggable(Level.FINE)) {
+				LOGGER.fine("Successfully installed application from file: " + file);
+			}
+		} catch (IncompatibleFeatureException | AlreadyLoadedFeatureException | InvalidFormatException e) {
+			// Handle exceptions related to incompatible or already loaded features
+			// Remove the feature from the storage if it's incompatible with the kernel
+			if (LOGGER.isLoggable(Level.SEVERE)) {
+				LOGGER.log(Level.SEVERE, "Failed to install application from file: " + file, e);
+				LOGGER.severe("Removing incompatible feature from storage: " + file);
+			}
+			storage.remove(file);
+		} catch (IOException e) {
+			if (LOGGER.isLoggable(Level.SEVERE)) {
+				LOGGER.log(Level.SEVERE, "IO error while loading application from file: " + file, e);
+			}
+		}
+	}
+
+	/**
+	 * Example of starting a loaded (installed) application.
+	 * <p>
+	 * When an application is installed, it is in the INSTALLED state. You can retrieve the list of installed
+	 * applications using Kernel.getAllLoadedFeatures().
+	 */
+	private static void startApplications() {
+		if (LOGGER.isLoggable(Level.FINE)) {
+			LOGGER.fine("Starting applications");
+		}
+		for (Feature app : Kernel.getAllLoadedFeatures()) {
+			app.start();
+			if (LOGGER.isLoggable(Level.FINE)) {
+				LOGGER.fine("Started application: " + app.getName());
+			}
+		}
+	}
+
+	/**
+	 * App Connect Provides a web app for App management: install, start, stop, uninstall.
+	 */
+	private static void startAppConnect() {
+		if (LOGGER.isLoggable(Level.INFO)) {
+			LOGGER.info("Starting App Connect");
+		}
+
+		try {
+			AppConnectServer appConnectServer = new AppConnectServer();
+			appConnectServer.start();
+		} catch (IOException e) {
+			if (LOGGER.isLoggable(Level.SEVERE)) {
+				LOGGER.log(Level.SEVERE, "Error Starting App Connect", e);
+			}
+		}
+	}
+
+	/**
+	 * Start CPU Monitoring.
+	 * <p>
+	 * This feature monitors CPU usage and provides insights into the health of the application.
+	 * <p>
+	 * To enable or disable CPU monitoring, modify the `health.check.enabled` property in the configuration file located
+	 * at `src/main/resources/kernel.properties.list`.
+	 * <p>
+	 * The monitoring interval, which determines how often CPU usage is checked, can be set using the
+	 * `health.check.interval.ms` property in the same configuration file. The value should be specified in milliseconds
+	 * (ms) to control the frequency of monitoring.
+	 */
+	private static void startHealthMonitoring() {
+		if (Boolean.getBoolean("health.check.enabled")) {
+			long interval = Long.getLong("health.check.interval.ms");
+			boolean forceGC = Boolean.getBoolean("health.check.gc.force");
+			if (LOGGER.isLoggable(Level.INFO)) {
+				LOGGER.info("Health Monitoring is enabled, interval: " + interval + "ms , forceGC: " + forceGC);
+			}
+
+			final Timer timer = ServiceFactory.getRequiredService(Timer.class);
+
+			// Start monitoring CPU and RAM usage at configured intervals as specified in the properties file.
+			final HealthServiceImpl healthMonitoringService = new HealthServiceImpl(timer, interval, forceGC);
+			healthMonitoringService.start();
+
+			// Log collected CPU usage periodically, with a 1-second delay after data collection.
+			final HealthLoggerTimerTask healthLoggerTimerTask = new HealthLoggerTimerTask(healthMonitoringService);
+			timer.scheduleAtFixedRate(healthLoggerTimerTask, interval + 1000, interval);
+		}
+	}
+
+	/**
+	 * Listener triggered when the application state changes.
+	 */
+	public static class OnAppStateChanged implements FeatureStateListener {
+
+		@Override
+		public void stateChanged(Feature app, @Nullable State previousState) {
+
+			switch (app.getState()) {
+			case STARTED:
+				onStarted(app);
+				break;
+
+			case STOPPED:
+				onStopped(app);
+				break;
+
+			case INSTALLED:
+				if (previousState == null) {
+					onInstalled(app);
+				} else if (State.STOPPED.equals(previousState)) {
+					onStopCompleted(app);
+				}
+				break;
+
+			case UNINSTALLED:
+				onUninstalled(app);
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		private void onInstalled(Feature app) {
+			if (LOGGER.isLoggable(Level.INFO)) {
+				LOGGER.info("New application installation detected: " + app.getName());
+			}
+		}
+
+		private void onStarted(Feature app) {
+			if (LOGGER.isLoggable(Level.INFO)) {
+				LOGGER.info("Application running: " + app.getName());
+			}
+		}
+
+		private void onStopped(Feature app) {
+			if (LOGGER.isLoggable(Level.INFO)) {
+				LOGGER.info("Application stopped: " + app.getName());
+			}
+			// Handles the screen state when an application stops.
+			// Ensures that if an application stops and no other application or the Kernel has a Displayable,
+			// a blank black screen is shown to indicate the absence of active displays.
+			if (Display.getDisplay().getDisplayable() == null && !hasRunningAppWithDisplay()) {
+				Display.getDisplay().requestShow(new BlackScreenDisplayable());
+			}
+		}
+
+		private void onStopCompleted(Feature app) {
+			if (LOGGER.isLoggable(Level.INFO)) {
+				LOGGER.info("Application completely stopped, and can be uninstalled: " + app.getName());
+			}
+		}
+
+		private void onUninstalled(Feature app) {
+			if (LOGGER.isLoggable(Level.INFO)) {
+				LOGGER.info("Application uninstalled: " + app.getName());
+			}
+		}
+
+		/**
+		 * @return true if an app has a GUI, false otherwise
+		 */
+		private boolean hasRunningAppWithDisplay() {
+			// Iterate over each loaded feature to check if a running app has a displayable component.
+			for (Feature app : Kernel.getAllLoadedFeatures()) {
+
+				// Skip apps that are not in the STARTED state.
+				if (!State.STARTED.equals(app.getState())) {
+					continue;
+				}
+
+				// Define a runnable to check if the app has a Displayable object available.
+				RunnableWithResult<Boolean> displayableExistsRunnable = new RunnableWithResult<Boolean>() {
+
+					@Override
+					protected Boolean runWithResult() {
+						// Check if a display is associated with the current app.
+						return Display.getDisplay().getDisplayable() != null;
+					}
+				};
+
+				// Execute the check within the app's context and evaluate the result.
+				Kernel.runUnderContext(app, displayableExistsRunnable);
+				if (Boolean.TRUE.equals(displayableExistsRunnable.getResult())) {
+					return true; // Return true if a displayable is found for any app.
+				}
+			}
+
+			// Return false if no running app with a Displayable object was found.
+			return false;
+		}
 	}
 }
