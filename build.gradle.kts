@@ -6,13 +6,19 @@
  */
 
 import org.gradle.internal.os.OperatingSystem
+import org.w3c.dom.Element
+import java.io.FileOutputStream
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 
 plugins {
     id("com.microej.gradle.application") version "1.1.0"
 }
 
 group = "com.microej.kernel"
-version = "2.1.0"
+version = "2.1.1"
 
 repositories {
     mavenCentral()
@@ -105,3 +111,54 @@ dependencies {
     }
 
 }
+
+// Workaround for offline repository
+tasks.register("updateIvyDescriptor") {
+    doLast {
+        val ivyFile = layout.buildDirectory.file("ivy.xml").get().asFile.absolutePath
+
+        val factory = DocumentBuilderFactory.newInstance()
+        val builder = factory.newDocumentBuilder()
+        val document = builder.parse(ivyFile)
+        val publicationsElements = document.getElementsByTagName("publications")
+        if (publicationsElements.length == 1) {
+            val publications = publicationsElements.item(0)
+            val executablePublication = document.createElement("artifact")
+            executablePublication.setAttribute("name", rootProject.name)
+            executablePublication.setAttribute("ext", "out")
+            executablePublication.setAttribute("type", "out")
+            executablePublication.setAttribute("conf", "default")
+            publications.appendChild(executablePublication)
+
+
+            val zipPublication = document.createElement("artifact")
+            zipPublication.setAttribute("name", rootProject.name)
+            zipPublication.setAttribute("ext", "zip")
+            zipPublication.setAttribute("type", "zip")
+            zipPublication.setAttribute("conf", "default")
+            publications.appendChild(zipPublication)
+
+            val pomPublication = document.createElement("artifact")
+            pomPublication.setAttribute("name", rootProject.name)
+            pomPublication.setAttribute("ext", "pom")
+            pomPublication.setAttribute("type", "pom")
+            pomPublication.setAttribute("conf", "dist")
+            publications.appendChild(pomPublication)
+
+            val modulePublication = document.createElement("artifact")
+            modulePublication.setAttribute("name", rootProject.name)
+            modulePublication.setAttribute("ext", "module")
+            modulePublication.setAttribute("type", "module")
+            modulePublication.setAttribute("conf", "dist")
+            publications.appendChild(modulePublication)
+
+            val transformerFactory = TransformerFactory.newInstance()
+            val transformer = transformerFactory.newTransformer()
+            val source = DOMSource(document)
+            val result = StreamResult(FileOutputStream(ivyFile))
+            transformer.transform(source, result)
+        }
+    }
+}
+
+tasks.getByName("generateIvyDescriptor").finalizedBy("updateIvyDescriptor")
