@@ -61,6 +61,7 @@ The kernel has been tested with the following reference VEE Ports:
 | 1.4.0          | 2.1.1            |
 | 2.0.0          | 2.2.0            |
 | 2.1.*          | 3.0.0            |
+| 2.2.0          | 3.0.0            |
 
 **[STM32F7508-DK](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK)**
 
@@ -70,6 +71,7 @@ The kernel has been tested with the following reference VEE Ports:
 | 1.4.0          | 2.0.0            |
 | 2.0.0          | 2.3.0            |
 | 2.1.*          | 2.3.0            |
+| 2.2.0          | 2.3.0            |
 
 For further information about VEE Ports, please refer to their respective README.
 
@@ -312,9 +314,9 @@ BUILD SUCCESSFUL in 12s
 This approach allows for building the Kernel against a VEE Port which sources are fetched locally.
 
 _Kernel GREEN_ is indeed not bound to a specific VEE Port and can be built against any other VEE Port as long as
-the [VEE Port requirements](#supported-vee-port) are met.
+the [VEE Port requirements](#requirements) are met.
 
-Sources for the reference VEE Ports are [available on GitHub](#supported-vee-port).
+Sources for the reference VEE Ports are [available on GitHub](#requirements).
 
 In order to set a local VEE Port path:
 
@@ -371,16 +373,13 @@ including the kernel and applications.
 3. **Calibration Procedure**:
 
 - During calibration, the MicroEJ VEE must be the only active task on the board to ensure accurate results.
-- The calibration process requires running specific code provided in the project.
-
-4. **Calibration Code Example**:
-
-- The calibration code is available
-  in [CpuCalibration.java](src/main/java/com/microej/kernel/green/monitoring/CpuCalibration.java).
-- To use this code:
+- The calibration process requires running specific code provided in the KF-Util library:
   - Update the `applicationEntryPoint` in [build.gradle.kts](build.gradle.kts) to
-    `com.microej.kernel.green.monitoring.CpuCalibration`.
+    `com.microej.kf.util.monitoring.CpuCalibration`.
   - Deploy and run the calibration code on your device.
+  - Get the calibration result logged by the code and update the value of the `monitoring.check.cpu.calibration` 
+property in the [kernel.properties.list](src/main/resources/kernel.properties.list).
+  - You can now revert the change in the [build.gradle.kts](build.gradle.kts) and run your project as usual.
 
 By following these steps, the system can accurately measure CPU usage and provide reliable monitoring capabilities.
 

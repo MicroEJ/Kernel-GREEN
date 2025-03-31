@@ -1,7 +1,7 @@
 /*
  * Java
  *
- * Copyright 2024 MicroEJ Corp. All rights reserved.
+ * Copyright 2024-2025 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 package com.microej.kernel.green.monitoring;
@@ -10,49 +10,49 @@ import java.util.Formatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.microej.kf.util.monitoring.ResourceMonitoringService;
 import ej.basictool.map.PackedMap;
 import ej.bon.TimerTask;
 
 /**
- * Log CPU usage periodically
+ * Logs CPU and RAM usage periodically
  * <p>
  * This logger generate the following log:
  * <p>
  * <code>
- healthloggertimertask INFO: ----------------------------
- healthloggertimertask INFO: Health Monitoring:
- healthloggertimertask INFO: ----------------------------
- healthloggertimertask INFO: Name	%CPU	%MEM	MEM(KB)
- healthloggertimertask INFO: App1	30.46	0.37	3.28
- healthloggertimertask INFO: App2	36.66	1.22	10.68
- healthloggertimertask INFO: GREEN	0.14	1.94	17.04
- healthloggertimertask INFO: %CPU: 67.25, KB Mem: 878 total, 847 free, 31.00 used
- healthloggertimertask INFO: Apps: 2
+ monitoringloggertimertask INFO: ----------------------------
+ monitoringloggertimertask INFO: Resource Monitoring:
+ monitoringloggertimertask INFO: ----------------------------
+ monitoringloggertimertask INFO: Name	%CPU	%MEM	MEM(KB)
+ monitoringloggertimertask INFO: App1	30.46	0.37	3.28
+ monitoringloggertimertask INFO: App2	36.66	1.22	10.68
+ monitoringloggertimertask INFO: GREEN	0.14	1.94	17.04
+ monitoringloggertimertask INFO: %CPU: 67.25, KB Mem: 878 total, 847 free, 31.00 used
+ monitoringloggertimertask INFO: Apps: 2
  * </code>
  */
-public class HealthLoggerTimerTask extends TimerTask {
+public class MonitoringLoggerTimerTask extends TimerTask {
 
 	public static final float ONE_KB = 1024f;
-	private static final Logger LOGGER = Logger.getLogger("HealthLoggerTimerTask");
-	private final HealthService healthMonitoringService;
+	private static final Logger LOGGER = Logger.getLogger("MonitoringLoggerTimerTask");
+	private final ResourceMonitoringService resourceMonitoringService;
 
-	public HealthLoggerTimerTask(HealthService healthMonitoringService) {
-		this.healthMonitoringService = healthMonitoringService;
-
+	public MonitoringLoggerTimerTask(ResourceMonitoringService resourceMonitoringService) {
+		this.resourceMonitoringService = resourceMonitoringService;
 	}
 
 	@Override
 	public void run() {
 		if (LOGGER.isLoggable(Level.INFO)) {
-			PackedMap<String, Float> cpuUsagePercent = healthMonitoringService.getUsedCpuPercentPerModule();
-			PackedMap<String, Long> ramUsage = healthMonitoringService.getUsedMemoryPerModule();
-			PackedMap<String, Float> ramUsagePercent = healthMonitoringService.getUsedMemoryPercentPerModule();
+			PackedMap<String, Float> cpuUsagePercent = resourceMonitoringService.getUsedCpuPercentPerModule();
+			PackedMap<String, Long> ramUsage = resourceMonitoringService.getUsedMemoryPerModule();
+			PackedMap<String, Float> ramUsagePercent = resourceMonitoringService.getUsedMemoryPercentPerModule();
 			if (cpuUsagePercent.isEmpty()) {
 				return;
 			}
 
 			LOGGER.info("----------------------------");
-			LOGGER.info("Health Monitoring:");
+			LOGGER.info("Resource Monitoring:");
 			LOGGER.info("----------------------------");
 			LOGGER.info("Name\t%CPU\t%MEM\tMEM(KB)");
 
@@ -71,8 +71,8 @@ public class HealthLoggerTimerTask extends TimerTask {
 				LOGGER.info(output.toString());
 			}
 
-			long freeMemory = healthMonitoringService.getFreeMemory() / 1024;
-			long totalMemory = healthMonitoringService.getTotalMemory() / 1024;
+			long freeMemory = resourceMonitoringService.getFreeMemory() / 1024;
+			long totalMemory = resourceMonitoringService.getTotalMemory() / 1024;
 
 			StringBuilder totalLineLog = new StringBuilder();
 			try (Formatter formatter = new Formatter(totalLineLog)) {

@@ -1,5 +1,5 @@
 # Properties
-# Copyright 2021-2024 MicroEJ Corp. All rights reserved.
+# Copyright 2021-2025 MicroEJ Corp. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be found with this software.
 
 ###############################################################################
@@ -51,21 +51,21 @@ ntp.port=123
 ntp.timeout=1000
 
 ###############################################################################
-# Health Monitoring
+# Resource Monitoring
 ###############################################################################
 
-health.check.enabled=false
+monitoring.check.enabled=true
 
 # Polling interval in milliseconds for monitoring resource consumption.
-health.check.interval.ms=10000
+monitoring.check.interval.ms=10000
 
 # If true, runs Garbage Collector before collecting RAM usage for refined monitoring.
 # Not recommended for production.
-health.check.gc.force=false
+monitoring.check.gc.force=false
 
 # This value represents the mapping of CPU load to the MicroEJ execution counter per one second.
 # It is generated during a calibration phase on the target device.
-health.check.cpu.calibration=590000
+monitoring.check.cpu.calibration=590000
 
 ###############################################################################
 # Storage

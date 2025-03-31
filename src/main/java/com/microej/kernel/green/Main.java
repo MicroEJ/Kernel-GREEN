@@ -1,7 +1,7 @@
 /*
  * Java
  *
- * Copyright 2021-2024 MicroEJ Corp. All rights reserved.
+ * Copyright 2021-2025 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 package com.microej.kernel.green;
@@ -12,8 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.microej.kernel.green.gui.BlackScreenDisplayable;
-import com.microej.kernel.green.monitoring.HealthLoggerTimerTask;
-import com.microej.kernel.green.monitoring.HealthServiceImpl;
+import com.microej.kernel.green.monitoring.MonitoringLoggerTimerTask;
 import com.microej.kernel.green.net.OnInternetStateChanged;
 import com.microej.kernel.green.net.OnNetworkStateChanged;
 import com.microej.kernel.green.security.SecurityManagerProvider;
@@ -33,6 +32,8 @@ import com.microej.kf.util.MapConverter;
 import com.microej.kf.util.RunnableWithResult;
 import com.microej.kf.util.ShortConverter;
 import com.microej.kf.util.StringConverter;
+import com.microej.kf.util.monitoring.ResourceMonitoringService;
+import com.microej.kf.util.monitoring.ResourceMonitoringServiceImpl;
 import com.microej.kf.util.service.ServiceRegistryKF;
 import com.microej.library.appconnect.http.AppConnectServer;
 
@@ -83,8 +84,8 @@ public class Main {
 		installApplications();
 		startApplications();
 
+		startResourceMonitoring();
 		startAppConnect();
-		startHealthMonitoring();
 	}
 
 	/**
@@ -310,34 +311,39 @@ public class Main {
 	}
 
 	/**
-	 * Start CPU Monitoring.
+	 * Start Resource Monitoring.
 	 * <p>
-	 * This feature monitors CPU usage and provides insights into the health of the application.
+	 * This feature monitors CPU and RAM usage and provides insights into the resource usage of the application.
 	 * <p>
-	 * To enable or disable CPU monitoring, modify the `health.check.enabled` property in the configuration file located
-	 * at `src/main/resources/kernel.properties.list`.
+	 * To enable or disable monitoring, modify the `monitoring.check.enabled` property in the configuration file
+	 * located at `src/main/resources/kernel.properties.list`.
 	 * <p>
-	 * The monitoring interval, which determines how often CPU usage is checked, can be set using the
-	 * `health.check.interval.ms` property in the same configuration file. The value should be specified in milliseconds
-	 * (ms) to control the frequency of monitoring.
+	 * The monitoring interval, which determines how often resource usage is checked, can be set using the
+	 * `monitoring.check.interval.ms` property in the same configuration file. The value should be specified in
+	 * milliseconds (ms) to control the frequency of monitoring.
 	 */
-	private static void startHealthMonitoring() {
-		if (Boolean.getBoolean("health.check.enabled")) {
-			long interval = Long.getLong("health.check.interval.ms");
-			boolean forceGC = Boolean.getBoolean("health.check.gc.force");
+	private static void startResourceMonitoring() {
+		if (Boolean.getBoolean("monitoring.check.enabled")) {
+			long interval = Long.getLong("monitoring.check.interval.ms");
+			boolean forceGC = Boolean.getBoolean("monitoring.check.gc.force");
 			if (LOGGER.isLoggable(Level.INFO)) {
-				LOGGER.info("Health Monitoring is enabled, interval: " + interval + "ms , forceGC: " + forceGC);
+				LOGGER.info("Resource Monitoring is enabled, interval: " + interval + "ms , forceGC: " + forceGC);
 			}
 
 			final Timer timer = ServiceFactory.getRequiredService(Timer.class);
 
 			// Start monitoring CPU and RAM usage at configured intervals as specified in the properties file.
-			final HealthServiceImpl healthMonitoringService = new HealthServiceImpl(timer, interval, forceGC);
-			healthMonitoringService.start();
+			final ResourceMonitoringServiceImpl resourceMonitoringService = new ResourceMonitoringServiceImpl(timer, interval, forceGC);
+			resourceMonitoringService.start();
 
 			// Log collected CPU usage periodically, with a 1-second delay after data collection.
-			final HealthLoggerTimerTask healthLoggerTimerTask = new HealthLoggerTimerTask(healthMonitoringService);
+			final MonitoringLoggerTimerTask healthLoggerTimerTask = new MonitoringLoggerTimerTask(resourceMonitoringService);
 			timer.scheduleAtFixedRate(healthLoggerTimerTask, interval + 1000, interval);
+
+			// Register the Resource Monitoring service with the registry
+			// This service is internal to the Kernel and inaccessible to applications
+			final ServiceRegistryKF serviceRegistry = (ServiceRegistryKF) ServiceFactory.getServiceRegistry();
+			serviceRegistry.register(ResourceMonitoringService.class, resourceMonitoringService, true);
 		}
 	}
 

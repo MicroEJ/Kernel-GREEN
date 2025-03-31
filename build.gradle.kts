@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "com.microej.kernel"
-version = "2.1.1"
+version = "2.2.0"
 
 repositories {
     mavenCentral()
@@ -70,10 +70,11 @@ dependencies {
     implementation("ej.library.eclasspath:formatter:2.3.0")
     implementation("ej.library.runtime:basictool:1.7.0")
     implementation("com.microej.library.kf:connectivity:2.1.0")
-    implementation("com.microej.library.util:kf-util:2.8.0")
+    implementation("com.microej.library.util:kf-util:3.0.0")
     implementation("ej.library.runtime:service:1.2.0")
     implementation("ej.library.runtime:property:4.2.0")
     implementation("ej.library.runtime:storage-fs:1.2.0")
+    implementation("ej.library.util:progress:1.0.3")
 
     // Mandatory Kernel API files
     implementation("com.microej.kernelapi:edc:1.1.0")
@@ -95,8 +96,8 @@ dependencies {
     // Ntp dependency
     implementation("ej.library.iot:net-util:1.2.0")
 
-    implementation("com.microej.library:appconnect-http:3.0.1")
-    implementation("com.microej.library:appconnect-kf:3.0.1")
+    implementation("com.microej.library:appconnect-http:3.1.0")
+    implementation("com.microej.library:appconnect-kf:3.1.0")
 
 
     // MicroEJ SDK Extensions
