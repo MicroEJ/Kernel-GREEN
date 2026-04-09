@@ -23,9 +23,9 @@ to build secure, efficient, and responsive applications suitable for a range of 
 - **Inter-App Communication**: Enables secure app interactions
   via [Shared Interfaces](https://docs.microej.com/en/latest/ApplicationDeveloperGuide/sandboxedAppSharedInterface.html).
 - **API Protection**: Secures critical APIs with SOAR (compile-time) and a Security Manager (runtime) for permissions.
-- **Health Monitoring**: Monitor critical system resources such as CPU, RAM.
-- **Portability**: Compatible with all MCU and MPU platforms supported by MicroEJ, tested on *NXP i.MX RT1170* and
-  *STM32F7508-DK*.
+- **Health Monitoring**: Monitor critical system resources such as CPU, RAM, and flash storage.
+- **Resource Manager**: Defines a policy that controls application resource usage (CPU, RAM, flash storage, and network bandwidth) and initial priority level.
+- **Portability**: Compatible with all MCU and MPU platforms supported by MicroEJ, tested on *NXP i.MX RT1170*.
 - **Extensive Libraries**: Supports a broad range of libraries and protocols like HTTP/S, MQTT, CoAP, and LWM2M.
 - **MicroEJ GUI**: Offers a lightweight, powerful GUI stack for UI development.
 
@@ -45,9 +45,10 @@ This kernel can be built using any VEE Port that provides the following Foundati
 | NET                | 1.1     |
 | SSL                | 2.2     |
 | SECURITY           | 1.7     |
-| MicroUI            | 3.1     |
+| MicroUI            | 3.6     |
 | Drawing            | 1.0     |
 | FS                 | 2.1     |
+| AspectJ            | 0.2     |
 
 ### Compatibility Matrix for Reference VEE Ports
 
@@ -62,22 +63,13 @@ The kernel has been tested with the following reference VEE Ports:
 | 2.0.0          | 2.2.0            |
 | 2.1.*          | 3.0.0            |
 | 2.2.0          | 3.0.0            |
-
-**[STM32F7508-DK](https://github.com/MicroEJ/VEEPort-STMicroelectronics-STM32F7508-DK)**
-
-| Kernel version | VEE Port version |
-|----------------|------------------|
-| 1.3.0          | 2.0.0            |
-| 1.4.0          | 2.0.0            |
-| 2.0.0          | 2.3.0            |
-| 2.1.*          | 2.3.0            |
-| 2.2.0          | 2.3.0            |
+| 3.1.0          | 3.1.0            |
 
 For further information about VEE Ports, please refer to their respective README.
 
 ## Pre-built Binaries
 
-Pre-built binaries for this kernel are available for *NXP i.MX RT1170* and *STM32F7508-DK*, ideal for developers
+Pre-built binaries for this kernel are available for *NXP i.MX RT1170*, ideal for developers
 exploring application development on this kernel.
 
 To get started, follow the
@@ -253,7 +245,7 @@ file: [kernel.properties.list](src/main/resources/kernel.properties.list).
 - **Connectivity Manager**: Manage network interface monitoring and internet connectivity checks, including enabling,
   disabling, and configuration.
 - **Network Time Protocol (NTP)**: Set up NTP servers for accurate time synchronization.
-- **Health Monitoring**: Monitor CPU and RAM usage by enabling, disabling, and customizing the resource monitoring
+- **Health Monitoring**: Monitor CPU, RAM and flash storage usage by enabling, disabling, and customizing the resource monitoring
   features.
 - **Storage**: Define and configure the storage service implementation to be used by the kernel.
 
@@ -334,12 +326,19 @@ gradlew loadVee -Dlocal.veeport.path=C:\path\to\local\veeport\source
 **NOTE:** If the variable ``defaultLocalVEEPortPath`` is not empty, the ``build.gradle.kts`` file will use the specified
 local VEE Port path. Otherwise, it will use the module dependency way to fetch the VEE Port.
 
+## Resource Manager
+
+The Resource Manager allows the Kernel to apply policy-defined resource limits on applications.
+Please refer to [this section](https://docs.microej.com/en/latest/KernelDeveloperGuide/resourceManager.html) from the [Kernel Developer Guide](https://docs.microej.com/en/latest/KernelDeveloperGuide/index.html) for more details.
+
 ## Health Monitoring
 
-The Health Monitoring Service enables periodic monitoring of RAM and CPU usage for the kernel and running applications.
+The Health Monitoring Service enables periodic monitoring of RAM, CPU and flash storage usage for the kernel and running applications.
 
 It can be enabled and configured using the following system properties in
-the [kernel.properties.list](src/main/resources/kernel.properties.list) file.
+the [kernel.properties.list](src/main/resources/kernel.properties.list) file. 
+
+**Note**: If no CPU limit is set in the policy file, CPU monitoring is disabled for that application.
 
 ````properties
 health.check.enabled=true
@@ -540,6 +539,11 @@ FAILURE: Build failed with an exception.
 > No 'release.properties' and 'architecture.properties' files found.
 The given file Path/to/specified/VEEPort/path is not a VEE archive.
 ```
+
+### The Application GUI is not correctly displayed (black screen)
+
+This issue may occur if the ``ej.microui.memory.imagesheap.size`` parameter in the 
+[common.properties](configuration/common.properties) file is set too low. Increasing its value can resolve the problem.
 
 ---
 _Copyright 2021-2025 MicroEJ Corp. All rights reserved._  

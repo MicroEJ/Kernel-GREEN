@@ -1,8 +1,8 @@
 # List
-# Copyright 2021-2024 MicroEJ Corp. All rights reserved.
+# Copyright 2021-2025 MicroEJ Corp. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be found with this software.
 ################
 # This file lists the required types.
 # These types are loaded dynamically and must be listed explicitly to prevent the SOAR from removing them.
 ###################
-com.microej.kernel.green.storage.SandboxedStorage=
+com.microej.kf.util.storage.SandboxedStorage

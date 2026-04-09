@@ -1,0 +1,69 @@
+# Version Catalog
+#
+# Copyright 2025 MicroEJ Corp. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be found with this software.
+
+[versions]
+microej-sdk = "1.4.0"
+
+[libraries]
+# Foundation libraries.
+ej-edc = { module = "ej.api:edc", version = "1.3.7" }
+ej-bon = { module = "ej.api:bon", version = "1.4.4" }
+ej-kf = { module = "ej.api:kf", version = "1.7.0" }
+ej-fs = { module = "ej.api:fs", version = "2.1.1" }
+ej-net = { module = "ej.api:net", version = "1.1.4" }
+ej-ssl = { module = "ej.api:ssl", version = "2.2.3" }
+ej-microui = { module = "ej.api:microui", version = "3.6.0" }
+ej-drawing = { module = "ej.api:drawing", version = "1.0.4" }
+
+# Libraries.
+ej-ui-mwt = { module = "ej.library.ui:mwt", version = "3.3.0" }
+ej-eclasspath-logging =  { module = "ej.library.eclasspath:logging", version = "1.2.1"}
+ej-eclasspath-formatter = { module = "ej.library.eclasspath:formatter", version = "2.3.0" }
+ej-runtime-basictool = { module = "ej.library.runtime:basictool", version = "1.8.0" }
+ej-runtime-service = { module = "ej.library.runtime:service", version = "1.2.0" }
+ej-runtime-property = { module = "ej.library.runtime:property", version = "4.2.0" }
+ej-runtime-storage-fs = { module = "ej.library.runtime:storage-fs", version = "1.2.0" }
+ej-util-progress = { module = "ej.library.util:progress", version = "1.0.3" }
+library-kf-connectivity = { module = "com.microej.library.kf:connectivity", version = "2.1.0" }
+library-kf-util = { module = "com.microej.library.util:kf-util", version = "3.1.2" }
+
+# Mandatory Kernel API files.
+kernel-api-edc = { module = "com.microej.kernelapi:edc", version = "1.2.0" }
+kernel-api-bon = { module = "com.microej.kernelapi:bon", version = "1.4.0" }
+kernel-api-kf = { module = "com.microej.kernelapi:kf", version = "2.2.0" }
+kernel-api-fs = { module = "com.microej.kernelapi:fs", version = "1.1.0" }
+kernel-api-net = { module = "com.microej.kernelapi:net", version = "1.3.0" }
+kernel-api-ssl = { module = "com.microej.kernelapi:ssl", version = "1.3.0" }
+kernel-api-microui = { module = "com.microej.kernelapi:microui", version = "3.6.0" }
+kernel-api-drawing = { module = "com.microej.kernelapi:drawing", version = "1.1.0" }
+kernel-api-mwt = { module = "com.microej.kernelapi:mwt", version = "2.2.0" }
+kernel-api-logging = { module = "com.microej.kernelapi:logging", version = "1.0.0" }
+kernel-api-basictool = { module = "com.microej.kernelapi:basictool", version = "1.3.0" }
+kernel-api-service = { module = "com.microej.kernelapi:service", version = "1.3.1" }
+kernel-api-property = { module = "com.microej.kernelapi:property", version = "1.3.1" }
+kernel-api-storage = { module = "com.microej.kernelapi:storage", version = "1.3.0" }
+kernel-api-connectivity = { module = "com.microej.kernelapi:connectivity", version = "1.3.0" }
+kernel-api-trace = { module = "com.microej.kernelapi:trace", version = "1.0.0" }
+
+# NTP dependency.
+ej-iot-net-util = { module = "ej.library.iot:net-util", version = "1.4.0" }
+
+# AppConnect libraries.
+library-appconnect-http = { module = "com.microej.library:appconnect-http", version = "3.2.0" }
+library-appconnect-kf = { module = "com.microej.library:appconnect-kf", version = "3.2.0" }
+
+# MicroEJ SDK extensions.
+tool-application-repository = { module = "com.is2t.tools:application-repository-extension", version = "1.0.3" }
+
+# AspectJ dependency.
+tool-weaver-aspectj = { module = "com.microej.tool.weaver:aspectj", version = "0.2.2" }
+
+# Test libraries.
+ej-junit = { module = "ej.library.test:junit", version = "1.12.0" }
+junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "1.8.2" }
+deploy-jenkins = { module = "com.microej.deploy:jenkins", version = "1.1.1"}
+
+[plugins]
+microej-application = { id = "com.microej.gradle.application", version.ref = "microej-sdk" }

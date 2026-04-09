@@ -5,8 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.2] - 2026-04-09
 
-## [2.2.0] - 2021-03-31
+### Removed
+
+- `repositories` block declaring `mavenCentral` in `build.gradle.kts`.
+
+## [2.3.1] - 2025-10-15
+
+### Changed
+
+- Revert ``ej.library.ui:mwt`` to version ``3.3.0``.
+- Revert ``com.microej.kernelapi:mwt`` to version ``2.2.0``.
+
+## [2.3.0] - 2025-10-14
+
+### Added
+
+- Feature policy management to control resource limitations (CPU, RAM, flash, network) and priority.
+- NET/FS hooks to enforce flash and bandwidth limits via AspectJ.
+- Property to avoid rebuilding kernel when building features.
+
+### Changed
+
+- Update ``AppConnect`` to version ``3.2.0``.
+- Update ``microej-sdk`` to version ``1.4.0``.
+- Update ``ej.api:edc`` to version ``1.3.7``.
+- Update ``ej.api:bon`` to version ``1.4.4``.
+- Update ``ej.api:net`` to version ``1.1.4``.
+- Update ``ej.api:ssl`` to version ``2.2.3``.
+- Update ``ej.api:microui`` to version ``3.6.0``.
+- Update ``ej.library.ui:mwt`` to version ``3.6.1``.
+- Update ``ej.library.runtime:basictool`` to version ``1.8.0``.
+- Update ``com.microej.library.util:kf-util`` to version ``3.1.2``.
+- Update ``ej.library.iot:net-util`` to version ``1.4.0``.
+- Update ``com.microej.kernelapi:edc`` to version ``1.2.0``.
+- Update ``com.microej.kernelapi:bon`` to version ``1.4.0``.
+- Update ``ej.library.iot:net-util`` to version ``1.4.0``.
+- Update ``com.microej.kernelapi:kf`` to version ``2.2.0``.
+- Update ``com.microej.kernelapi:net`` to version ``1.3.0``.
+- Update ``com.microej.kernelapi:ssl`` to version ``1.3.0``.
+- Update ``com.microej.kernelapi:storage`` to version ``1.3.0``.
+- Update ``com.microej.kernelapi:microui`` to version ``3.6.0``.
+- Update ``com.nxp.vee.mimxrt1170_mapps`` to version ``3.1.0``.
+- Update ``com.microej.platform.i386`` to version ``2.2.0``.
+
+### Fixed
+
+- NullPointerException when using resource monitoring on simulator.
+
+### Removed
+
+- Remove support for STM32F7508-DK.
+- Remove Ivy descriptor workaround (already supported by MicroEJ SDK >= ``1.2.0``).
+
+## [2.2.0] - 2025-03-31
 
 ### Changed
 
@@ -130,5 +183,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - NTP system application.
 
 ---
-_Copyright 2021-2025 MicroEJ Corp. All rights reserved._  
-_Use of this source code is governed by a BSD-style license that can be found with this software._  
+
+_Copyright 2021-2026 MicroEJ Corp. All rights reserved._
+_Use of this source code is governed by a BSD-style license that can be found with this software._

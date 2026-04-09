@@ -1,28 +1,22 @@
 /*
  * Kotlin
  *
- * Copyright 2023-2025 MicroEJ Corp. All rights reserved.
+ * Copyright 2023-2026 MicroEJ Corp. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be found with this software.
  */
 
-import org.gradle.internal.os.OperatingSystem
-import org.w3c.dom.Element
-import java.io.FileOutputStream
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
+import com.microej.gradle.tasks.BuildApplicationObjectFileTask
+import com.microej.gradle.tasks.BuildExecutableTask
+import com.microej.gradle.tasks.BuildVirtualDeviceTask
+import com.microej.gradle.tasks.RunOnSimulatorTask
+import com.microej.gradle.tasks.LoadVeeTask
 
 plugins {
-    id("com.microej.gradle.application") version "1.1.0"
+    alias(libs.plugins.microej.application)
 }
 
 group = "com.microej.kernel"
-version = "2.2.0"
-
-repositories {
-    mavenCentral()
-}
+version = "2.3.2"
 
 microej {
     applicationEntryPoint = "com.microej.kernel.green.Main"
@@ -36,7 +30,7 @@ microej {
 // Update the following variables to set your VEE Port information
 val defaultVeePortGroup: String = "com.nxp.vee.mimxrt1170_mapps"
 val defaultVeePortModule: String = "vee-port"
-val defaultVeePortVersion: String = "3.0.0"
+val defaultVeePortVersion: String = "3.1.0"
 
 
 // Allows to override the VEE Port information with command line arguments
@@ -54,54 +48,57 @@ val localVEEPortPath: String = providers.systemProperty("local.veeport.path").ge
 
 
 dependencies {
-    // Foundation libraries
-    implementation("ej.api:edc:1.3.5")
-    implementation("ej.api:bon:1.4.1")
-    implementation("ej.api:kf:1.7.0")
-    implementation("ej.api:net:1.1.2")
-    implementation("ej.api:ssl:2.2.1")
-    implementation("ej.api:microui:3.1.1")
-    implementation("ej.api:drawing:1.0.4")
-    implementation("ej.api:fs:2.1.1")
+    // Foundation libraries.
+    implementation(libs.ej.edc)
+    implementation(libs.ej.bon)
+    implementation(libs.ej.kf)
+    implementation(libs.ej.fs)
+    implementation(libs.ej.net)
+    implementation(libs.ej.ssl)
+    implementation(libs.ej.microui)
+    implementation(libs.ej.drawing)
 
-    // Add on libraries
-    implementation("ej.library.ui:mwt:3.3.0")
-    implementation("ej.library.eclasspath:logging:1.2.1")
-    implementation("ej.library.eclasspath:formatter:2.3.0")
-    implementation("ej.library.runtime:basictool:1.7.0")
-    implementation("com.microej.library.kf:connectivity:2.1.0")
-    implementation("com.microej.library.util:kf-util:3.0.0")
-    implementation("ej.library.runtime:service:1.2.0")
-    implementation("ej.library.runtime:property:4.2.0")
-    implementation("ej.library.runtime:storage-fs:1.2.0")
-    implementation("ej.library.util:progress:1.0.3")
+    // Libraries.
+    implementation(libs.ej.ui.mwt)
+    implementation(libs.ej.eclasspath.logging)
+    implementation(libs.ej.eclasspath.formatter)
+    implementation(libs.ej.runtime.basictool)
+    implementation(libs.ej.runtime.service)
+    implementation(libs.ej.runtime.property)
+    implementation(libs.ej.runtime.storage.fs)
+    implementation(libs.ej.util.progress)
+    implementation(libs.library.kf.connectivity)
+    implementation(libs.library.kf.util)
 
-    // Mandatory Kernel API files
-    implementation("com.microej.kernelapi:edc:1.1.0")
-    implementation("com.microej.kernelapi:bon:1.3.0")
-    implementation("com.microej.kernelapi:kf:2.0.3")
-    implementation("com.microej.kernelapi:net:1.2.2")
-    implementation("com.microej.kernelapi:ssl:1.1.0")
-    implementation("com.microej.kernelapi:basictool:1.3.0")
-    implementation("com.microej.kernelapi:storage:1.1.0")
-    implementation("com.microej.kernelapi:microui:3.0.0")
-    implementation("com.microej.kernelapi:mwt:2.2.0")
-    implementation("com.microej.kernelapi:drawing:1.1.0")
-    implementation("com.microej.kernelapi:logging:1.0.0")
-    implementation("com.microej.kernelapi:connectivity:1.3.0")
-    implementation("com.microej.kernelapi:trace:1.0.0")
-    implementation("com.microej.kernelapi:service:1.3.1")
-    implementation("com.microej.kernelapi:property:1.3.1")
+    // Mandatory Kernel API files.
+    implementation(libs.kernel.api.edc)
+    implementation(libs.kernel.api.bon)
+    implementation(libs.kernel.api.kf)
+    implementation(libs.kernel.api.net)
+    implementation(libs.kernel.api.ssl)
+    implementation(libs.kernel.api.microui)
+    implementation(libs.kernel.api.drawing)
+    implementation(libs.kernel.api.mwt)
+    implementation(libs.kernel.api.logging)
+    implementation(libs.kernel.api.basictool)
+    implementation(libs.kernel.api.service)
+    implementation(libs.kernel.api.property)
+    implementation(libs.kernel.api.storage)
+    implementation(libs.kernel.api.connectivity)
+    implementation(libs.kernel.api.trace)
 
-    // Ntp dependency
-    implementation("ej.library.iot:net-util:1.2.0")
+    // NTP dependency.
+    implementation(libs.ej.iot.net.util)
 
-    implementation("com.microej.library:appconnect-http:3.1.0")
-    implementation("com.microej.library:appconnect-kf:3.1.0")
+    // AppConnect libraries.
+    implementation(libs.library.appconnect.http)
+    implementation(libs.library.appconnect.kf)
 
+    // MicroEJ SDK extensions.
+    microejTool(libs.tool.application.repository)
 
-    // MicroEJ SDK Extensions
-    microejTool("com.is2t.tools:application-repository-extension:1.0.3")
+    // AspectJ dependency.
+    microejTool(libs.tool.weaver.aspectj)
 
     // VEE Port dependency
     // If any local VEE Port path is provided, look for the local source, otherwise fetch the VEE Port as module dependency
@@ -113,53 +110,62 @@ dependencies {
 
 }
 
-// Workaround for offline repository
-tasks.register("updateIvyDescriptor") {
+// Workaround to add the foundation AspectJ as a dependency without adding it in the VEE port.
+val loadVee = tasks.withType(LoadVeeTask::class).named("loadVee")
+loadVee.configure {
+    inputs.files(configurations.getByName("virtualDeviceToolClasspath"))
+
     doLast {
-        val ivyFile = layout.buildDirectory.file("ivy.xml").get().asFile.absolutePath
-
-        val factory = DocumentBuilderFactory.newInstance()
-        val builder = factory.newDocumentBuilder()
-        val document = builder.parse(ivyFile)
-        val publicationsElements = document.getElementsByTagName("publications")
-        if (publicationsElements.length == 1) {
-            val publications = publicationsElements.item(0)
-            val executablePublication = document.createElement("artifact")
-            executablePublication.setAttribute("name", rootProject.name)
-            executablePublication.setAttribute("ext", "out")
-            executablePublication.setAttribute("type", "out")
-            executablePublication.setAttribute("conf", "default")
-            publications.appendChild(executablePublication)
-
-
-            val zipPublication = document.createElement("artifact")
-            zipPublication.setAttribute("name", rootProject.name)
-            zipPublication.setAttribute("ext", "zip")
-            zipPublication.setAttribute("type", "zip")
-            zipPublication.setAttribute("conf", "default")
-            publications.appendChild(zipPublication)
-
-            val pomPublication = document.createElement("artifact")
-            pomPublication.setAttribute("name", rootProject.name)
-            pomPublication.setAttribute("ext", "pom")
-            pomPublication.setAttribute("type", "pom")
-            pomPublication.setAttribute("conf", "dist")
-            publications.appendChild(pomPublication)
-
-            val modulePublication = document.createElement("artifact")
-            modulePublication.setAttribute("name", rootProject.name)
-            modulePublication.setAttribute("ext", "module")
-            modulePublication.setAttribute("type", "module")
-            modulePublication.setAttribute("conf", "dist")
-            publications.appendChild(modulePublication)
-
-            val transformerFactory = TransformerFactory.newInstance()
-            val transformer = transformerFactory.newTransformer()
-            val source = DOMSource(document)
-            val result = StreamResult(FileOutputStream(ivyFile))
-            transformer.transform(source, result)
+        configurations.getByName("virtualDeviceToolClasspath").resolvedConfiguration.files.filter { it.name.contains("aspectj") }
+            .forEach {
+            // Extract AspectJ in a temporary folder.
+            project.copy {
+                from(zipTree(it))
+                into(project.layout.buildDirectory.dir("tmp/aspectJ"))
+            }
+            // Copy the "content" folder in the "build/vee" folder.
+            project.copy {
+                from(project.layout.buildDirectory.dir("tmp/aspectJ/content"))
+                into(loadedVeeDir)
+            }
         }
     }
 }
 
-tasks.getByName("generateIvyDescriptor").finalizedBy("updateIvyDescriptor")
+allprojects {
+    tasks.withType<BuildExecutableTask> {
+        setOnlyIf {
+            // Avoid to build the kernel again during a buildFeature
+            !(project.hasProperty("feature.skip.build.kernel") && (findProperty("feature.skip.build.kernel") == "true") && gradle.taskGraph.allTasks.stream()
+                .map { it.name }.anyMatch { it.equals("buildFeature") })
+        }
+    }
+}
+
+val aspectSources = project.file("src/main/aspectj")
+val aspectSkip = "false"
+
+tasks.withType<BuildApplicationObjectFileTask> {
+    systemProperties.put("microej.option.microej.aspectj.skip", aspectSkip)
+    systemProperties.put("microej.option.microej.aspects.src", aspectSources.absolutePath)
+}
+
+tasks.withType<BuildVirtualDeviceTask> {
+    systemProperties.put("microej.option.microej.aspectj.skip", aspectSkip)
+    systemProperties.put("microej.option.microej.aspects.src", aspectSources.absolutePath)
+}
+
+tasks.withType<RunOnSimulatorTask> {
+    systemProperties.put("microej.option.microej.aspectj.skip", aspectSkip)
+    systemProperties.put("microej.option.microej.aspects.src", aspectSources.absolutePath)
+}
+
+// Skip building javadoc (as a workaround).
+val skipJavaDoc = providers.systemProperty("skip.java.doc").map { it.toBoolean() }.orElse(true)
+tasks.named<Javadoc>("javadoc") {
+    source = sourceSets.getByName("main").allJava
+    classpath = sourceSets.getByName("main").compileClasspath
+    onlyIf {
+        !(skipJavaDoc.get())
+    }
+}

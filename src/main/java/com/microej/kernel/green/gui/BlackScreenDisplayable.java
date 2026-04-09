@@ -12,13 +12,13 @@ import ej.microui.display.GraphicsContext;
 import ej.microui.display.Painter;
 
 /**
- * Class that represents a black screen to be displayed by the Kernel
+ * Class that represents a black screen to be displayed by the kernel.
  */
 public class BlackScreenDisplayable extends Displayable {
 
 	@Override
 	protected void render(GraphicsContext gc) {
-		// clean
+		// Clean.
 		gc.setColor(Colors.BLACK);
 		int width = gc.getWidth();
 		int height = gc.getHeight();

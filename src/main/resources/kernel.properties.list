@@ -21,6 +21,13 @@ security.manager.enabled=true
 security.manager.mode=LOGGING
 
 ###############################################################################
+# Resource Manager
+###############################################################################
+
+# Feature policy file
+feature.policy.name=/feature.policy.json
+
+###############################################################################
 # Connectivity Manager
 ###############################################################################
 
@@ -72,10 +79,10 @@ monitoring.check.cpu.calibration=590000
 ###############################################################################
 
 # Implementation class of Storage Service
-ej.storage.Storage=com.microej.kernel.green.storage.SandboxedStorage
+ej.storage.Storage=com.microej.kf.util.storage.SandboxedStorage
 
 # Storage root directory
-ej.storage.fs.StorageFs.root=microej
+ej.storage.fs.StorageFs.root=storage
 
 
 ###############################################################################

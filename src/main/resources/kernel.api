@@ -2,7 +2,7 @@
 <!--
 	Kernel API
 	
-	Copyright 2021-2023 MicroEJ Corp. All rights reserved.
+	Copyright 2021-2025 MicroEJ Corp. All rights reserved.
 	Use of this source code is governed by a BSD-style license that can be found with this software.
 -->
 <require>
@@ -37,6 +37,55 @@
 	<method name="ej.bon.XMath.sqrt(double)double"/>
 	<method name="ej.bon.XMath.tan(double)double"/>
 	<method name="ej.bon.XMath.toDegrees(double)double"/>
-	<method name="ej.bon.XMath.toRadians(double)double"/>
+    <method name="ej.bon.XMath.toRadians(double)double"/>
+
+    <type name="com.microej.kf.util.control.fs.OpenedFilesLimitException"/>
+    <type name="com.microej.kf.util.control.fs.StorageLimitException"/>
+    <type name="com.microej.kf.util.control.net.BandwidthLimitException"/>
+    <method name="com.microej.kf.util.control.net.BandwidthLimitException.getNextDate()java.util.Date"/>
+    <type name="com.microej.kf.util.control.net.OpenedSocketsLimitException"/>
+
+    <!-- TODO: REMOVE AFTER FS KERNEL API FIX -->
+    <type name="java.io.RandomAccessFile"/>
+    <method name="java.io.RandomAccessFile.RandomAccessFile(java.io.File,java.lang.String)void"/>
+    <method name="java.io.RandomAccessFile.RandomAccessFile(java.lang.String,java.lang.String)void"/>
+    <method name="java.io.RandomAccessFile.close()void"/>
+    <method name="java.io.RandomAccessFile.getFilePointer()long"/>
+    <method name="java.io.RandomAccessFile.length()long"/>
+    <method name="java.io.RandomAccessFile.read()int"/>
+    <method name="java.io.RandomAccessFile.read(byte[])int"/>
+    <method name="java.io.RandomAccessFile.read(byte[],int,int)int"/>
+    <method name="java.io.RandomAccessFile.readBoolean()boolean"/>
+    <method name="java.io.RandomAccessFile.readByte()byte"/>
+    <method name="java.io.RandomAccessFile.readChar()char"/>
+    <method name="java.io.RandomAccessFile.readDouble()double"/>
+    <method name="java.io.RandomAccessFile.readFloat()float"/>
+    <method name="java.io.RandomAccessFile.readFully(byte[])void"/>
+    <method name="java.io.RandomAccessFile.readFully(byte[],int,int)void"/>
+    <method name="java.io.RandomAccessFile.readInt()int"/>
+    <method name="java.io.RandomAccessFile.readLine()java.lang.String"/>
+    <method name="java.io.RandomAccessFile.readLong()long"/>
+    <method name="java.io.RandomAccessFile.readShort()short"/>
+    <method name="java.io.RandomAccessFile.readUTF()java.lang.String"/>
+    <method name="java.io.RandomAccessFile.readUnsignedByte()int"/>
+    <method name="java.io.RandomAccessFile.readUnsignedShort()int"/>
+    <method name="java.io.RandomAccessFile.seek(long)void"/>
+    <method name="java.io.RandomAccessFile.skipBytes(int)int"/>
+    <method name="java.io.RandomAccessFile.write(byte[])void"/>
+    <method name="java.io.RandomAccessFile.write(byte[],int,int)void"/>
+    <method name="java.io.RandomAccessFile.write(int)void"/>
+    <method name="java.io.RandomAccessFile.writeBoolean(boolean)void"/>
+    <method name="java.io.RandomAccessFile.writeByte(int)void"/>
+    <method name="java.io.RandomAccessFile.writeBytes(java.lang.String)void"/>
+    <method name="java.io.RandomAccessFile.writeChar(int)void"/>
+    <method name="java.io.RandomAccessFile.writeChars(java.lang.String)void"/>
+    <method name="java.io.RandomAccessFile.writeDouble(double)void"/>
+    <method name="java.io.RandomAccessFile.writeFloat(float)void"/>
+    <method name="java.io.RandomAccessFile.writeInt(int)void"/>
+    <method name="java.io.RandomAccessFile.writeLong(long)void"/>
+    <method name="java.io.RandomAccessFile.writeShort(int)void"/>
+    <method name="java.io.RandomAccessFile.writeUTF(java.lang.String)void"/>
+    <method name="java.io.RandomAccessFile.setLength(long)void"/>
+    <!-- TODO: END -->
 	
 </require>
